@@ -1,0 +1,49 @@
+body{
+  font-family: sans-serif;
+}
+h1,h2,h3,h4,h5,h6{
+  color: #454545;
+}
+a{
+  color:#08f;
+  text-decoration: none
+}
+a:hover{
+  text-decoration: underline
+}
+svg{
+  outline: 1px solid red;
+}
+line{
+  stroke: red;
+  stroke-width: 3.5;
+}
+rect{
+  opacity: 0.4;
+}
+
+.area{
+  background: url(./reference.png);
+  overflow: hidden;
+  background-size: cover;
+}
+
+.cover{
+  /*width: 100px;*/
+  /*height: 100px;*/
+  background:rgba(0,0,0,0.5); 
+  position: absolute;
+  /*transition: transform linear 5s;*/
+}
+/*
+
+.cover-x{
+  transform: translate(-100%, 0);
+}
+.cover-y{
+  transform: translate(0, -100%);
+}
+
+.cover-x.on, .cover-y.on{
+  transform: translate(0, 0);
+}*/

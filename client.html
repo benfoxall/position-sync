@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Position Sync</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h1>Position Sync: client</h1>
+
+  <button id="calibrate" style="width:100%; height:300px;">CALIBRATE</button>
+  <div class="area">
+  </div>
+
+  <button id="timestamp" style="width:100%;height:4em">timestamp</button>
+  <h2 id="timestamp_result">-</h2>
+
+  <script src="bower_components/d3/d3.js"></script>
+  <script type="text/javascript">
+
+
+  var w = 400, h = 400,
+      duration = 4000;
+
+  var svg = d3.select('.area')
+    .style('width',  w + 'px')
+    .style('height', h + 'px')
+    .append('svg')
+    .attr('height', h)
+    .attr('width', w);
+
+
+
+  var past = [], client_epoch, client_x, client_y;
+  function handle(e){
+    console.log("000")
+    // e.preventDefault();
+    past.unshift(+ new Date);
+    if(past.length > 3){
+
+      // is calibrated
+      var a = (past[2] + past[3])/2,
+          b = (past[0] + past[1])/2,
+          diff = b - a;
+
+      if(diff > duration*1.7 && a - b < duration*2.3){
+        console.log("calibrated!")
+        client_epoch = Math.round((a + b)/2);
+
+        client_y = 1 - ((past[0] - past[1]) / duration / 2)
+        client_x = 1 - ((past[2] - past[3]) / duration / 2)
+
+        svg.append('circle')
+          .attr('r',10)
+          .attr('cx',client_x*w)
+          .attr('cy',(1-client_y)*h)
+          .attr('fill','rgba(255,0,0,0.3)')
+      }
+
+    }
+  }
+
+  d3.select("#calibrate").on('mousedown', handle)
+  d3.select("#calibrate").on('mouseup', handle)
+
+  d3.select("#timestamp").on('click', function(){
+    d3.select('#timestamp_result').text((+new Date)- client_epoch);
+  })
+
+
+
+  </script>
+
+</body>
+</html>
