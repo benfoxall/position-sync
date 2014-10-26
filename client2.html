@@ -41,9 +41,17 @@
 
     <div class="demo">
       <h3 class="demo-title">Demo #2 </h3>
-      <p class="demo-warning"><span class="icon-">warning</span>This will cause the screen to flash on and off</p>
       <p>
         <a class="demo-start" href="#" id="demo-start-2"><span class="icon-">start</span></a>
+      </p>
+    </div>
+
+
+    <div class="demo">
+      <h3 class="demo-title">Demo #3 </h3>
+      <p class="demo-warning"><span class="icon-">warning</span>This will cause the screen to flash on and off</p>
+      <p>
+        <a class="demo-start" href="#" id="demo-start-3"><span class="icon-">start</span></a>
       </p>
     </div>
 
@@ -389,6 +397,7 @@
       demoTitle   = el('demo-title'),
       demoStart1  = el('demo-start-1'),
       demoStart2  = el('demo-start-2'),
+      demoStart3  = el('demo-start-3'),
       bodyElement = document.getElementsByTagName('body')[0];
 
 
@@ -398,6 +407,12 @@
     bodyElement.style.overflow = 'auto';
   })
 
+  bean.on(window, 'keyup',function(e){
+    if (e.keyCode == 27){
+      demoPanel.style.display = 'none';
+      bodyElement.style.overflow = 'auto';
+    }
+  })
 
   bean.on(demoStart1, 'click', function(e){
     e.preventDefault();
@@ -412,6 +427,14 @@
     demoPanel.style.display = 'block';
     bodyElement.style.overflow = 'hidden';
     demoTitle.innerHTML = 'Demo #2'
+  })
+
+
+  bean.on(demoStart3, 'click', function(e){
+    e.preventDefault();
+    demoPanel.style.display = 'block';
+    bodyElement.style.overflow = 'hidden';
+    demoTitle.innerHTML = 'Demo #3'
   })
 
   </script>
