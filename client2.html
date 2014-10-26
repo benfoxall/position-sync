@@ -127,6 +127,124 @@
   var calibrated = {left:null,right:null,down:null};
 
 
+
+  // look for calibration
+  function process(){
+
+    if(!calibrated.left){
+      calibrated.left = point(
+        calibrations.filter(function(c){
+          return c.type == 'left'
+        }).map(function(d){
+          return d.time
+        })
+      );
+    }
+
+    if(!calibrated.right){
+      calibrated.right = point(
+        calibrations.filter(function(c){
+          return c.type == 'right'
+        }).map(function(d){
+          return d.time
+        })
+      );
+    }
+
+    if(!calibrated.down){
+      calibrated.down = point(
+        calibrations.filter(function(c){
+          return c.type == 'down'
+        }).map(function(d){
+          return d.time
+        })
+      );
+    }
+
+    var right = calibrated.right,
+        left  = calibrated.left,
+        down  = calibrated.down;
+
+    if(offset && x && y) return console.log("completed")
+
+    if(right !== null && left !== null){
+
+      // global
+      offset = ps.average([left, right], modulus);
+
+      // global
+      // -1 -> 1
+      x = (ps.distance(offset, right, modulus) / (0.25*modulus));
+
+      // 0 -> 1
+      x = (x/2)+0.5;
+
+      // 0 -> w
+      // x = x*w;
+
+      console.log("X", x);
+
+      if(down !== null){
+        // global
+        y = (ps.distance(offset, down, modulus) / (0.25*modulus));
+
+        // 0 -> 1
+        y = (y/2)+0.5;
+
+        // 0 -> h
+        // y = y*h;
+
+        console.log("Y", y);
+
+        // debug.append('circle')
+        //   .attr('r',10)
+        //   .attr('cx',x)
+        //   .attr('cy',y)
+        //   .attr('fill','rgba(255,0,0,0.3)')
+      }
+    }
+  }
+
+
+  // the most recent averaged point
+  function point(timestamps){
+    // are the last two close enough to be a match?
+    var last        = timestamps[timestamps.length - 1],
+        penultimate = timestamps[timestamps.length - 2];
+
+    if(last && penultimate){
+      var d = ps.distance(last, penultimate, modulus);
+
+      if(Math.abs(last - penultimate) < modulus/2){
+        console.log("found points, but too close together (pre modulation)")
+        return null;
+      }
+
+      if(d < modulus*0.1){
+        var avg = ps.average([last, penultimate], modulus)
+        return avg;
+      } else {
+        console.log("found points, but not close enough")
+      }
+    }
+
+    return null;
+
+  }
+
+  bean.on(calibrations, 'modified', process)
+
+
+
+
+
+
+
+
+
+  // Calibration visuals
+
+
   var w = 150,
       h = 150;
 
@@ -145,14 +263,30 @@
     .attr('stroke-width',0.02)
 
   var points = g.selectAll('.point').data(calibrations);
+  var x_line = svg.append('line').attr({
+    x1:0, y1:0, x2: 0, y1: h,
+    stroke: '#eee','stroke-width':2,
+    transform: 'translate(-10, 0)'
+  })
+  var y_line = svg.append('line').attr({
+    x1:0, y1:0, x2:w, y1:0,
+    stroke: '#eee','stroke-width':2,
+    transform: 'translate(0, -10)'
+  })
+  var xy_circle = svg.append('circle').attr({
+    cx:-10,
+    cy:-10,
+    r:10,
+    fill: 'rgba(0, 255, 0, 0.6)'
+  })
 
   var modRad  = (Math.PI*2) / modulus;
 
-  function x(d){
+  function cx(d){
     return d3.round(Math.sin(d.time*modRad),4)
   }
 
-  function y(d){
+  function cy(d){
     return d3.round(-Math.cos(d.time*modRad),4)
   }
 
@@ -163,8 +297,8 @@
       .append('circle')
       .attr('class', 'point')
       .attr('r', 0.1)
-      .attr('cx', x)
-      .attr('cy', y)
+      .attr('cx', cx)
+      .attr('cy', cy)
       .attr('fill', function(d){
         switch(d.type){
           case 'left' : return '#ff7f0e'
@@ -175,7 +309,16 @@
       });
     points
       .exit()
-      .remove()
+      .remove();
+
+    if(x){
+      x_line.attr('transform','translate('+ (d3.round(x*w)+0.5) + ',0)')
+      xy_circle.attr('cx', (d3.round(x*w)+0.5))
+    }
+    if(y){
+      y_line.attr('transform','translate(0, '+ (d3.round(y*h)+0.5) + ')')
+      xy_circle.attr('cy', (d3.round(y*h)+0.5))
+    }
   }
 
 

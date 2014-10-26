@@ -44,9 +44,12 @@
     return (((+ new Date) - (epoch||0)) % duration) / duration
   }
 
-  var rightLine = svg.append('line').attr({x0:0, y0:0, x1: 0, y1: h})
-  var leftLine  = svg.append('line').attr({x0:0, y0:0, x1: 0, y1: h})
-  var downLine  = svg.append('line').attr({x0:0, y0:0, x1: w, y1: 0})
+  var rightLine = svg.append('line').attr({x0:0, y0:0, x1: 0, y1: h, 
+    'stroke-width':3, stroke:'#08f'})
+  var leftLine  = svg.append('line').attr({x0:0, y0:0, x1: 0, y1: h,
+    'stroke-width':3, stroke:'#ff7f0e'})
+  var downLine  = svg.append('line').attr({x0:0, y0:0, x1: w, y1: 0,
+    'stroke-width':3, stroke:'#f08'})
 
   function render(){
     requestAnimationFrame(render);
