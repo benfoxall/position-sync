@@ -14,7 +14,11 @@
 </head>
 <body>
   <h1>Hello</h1>
-  <p>[[some intro text here]]</p>
+
+  <div class="content">
+    <p>Some intro stuff here</p>
+
+  </div>
 
   <h2>Calibration <small><a href="#" class="icon-">close</a></small></h2>
 
@@ -22,6 +26,12 @@
     <a href="#" id="calibrate-right">right</a>
     <a href="#" id="calibrate-left">left</a>
     <a href="#" id="calibrate-down">down</a>
+
+    <div id="calibration-status"></div>
+  </div>
+
+  <div id="post-calibration">
+    <h3>Demo #1 <small><a href="#" class="icon-">start</a></small></h3>
   </div>
 
   <footer>
@@ -37,7 +47,7 @@
 
 
 
-<div class="icon-">waiting warning ok close start stop right down left twitter github&nbsp;
+  <div class="icon-">waiting warning ok close start stop right down left twitter github&nbsp;
     </div>
   <h1>timestamps</h1>
   <h1>Calibration</h1>
@@ -47,8 +57,139 @@
   <div class="area">
   </div>
   <script src="bower_components/d3/d3.js"></script>
+  <script src="bower_components/bean/bean.js"></script>
   <script src="ps.js"></script>
   <script type="text/javascript">
+
+  // shared config
+  var width   = 960,
+      height  = 540,
+      modulus = 10000;
+
+  // helper functions
+  var el = document.getElementById.bind(document);
+
+  // ** Calibration code **
+
+  // the things we are trying to find out about the client
+  var x, y, offset;
+
+  // todo - load from session storage
+
+  // observed calibration timestamps
+  var calibrations = [
+    // {type, time}
+  ];
+
+  // elements 
+  var 
+    calibrateRight = el('calibrate-right'),
+    calibrateLeft = el('calibrate-left'),
+    calibrateDown = el('calibrate-down')
+
+
+  // handlers for populating the calibrations array
+  var handlers = (function(){
+    return {
+      right: make('right'),
+      left: make('left'),
+      down: make('down'),
+      prevent: prevent
+    }
+    function make(name){
+      return function(e){
+        prevent(e)
+        calibrations.push({
+          type: name, 
+          time: + new Date()
+        })
+
+        bean.fire(calibrations, 'modified')
+      }
+    }
+    function prevent(e){
+      if(e && e.preventDefault) e.preventDefault()
+    }
+  })()
+
+  // no click for now - want make it instant
+  bean.on(el('calibrate-right'), 'mousedown touchstart', handlers.right)
+  bean.on(el('calibrate-left'),  'mousedown touchstart', handlers.left)
+  bean.on(el('calibrate-down'),  'mousedown touchstart', handlers.down)
+
+  // disable clicks
+  bean.on(el('calibrate-right'), 'click', handlers.prevent)
+  bean.on(el('calibrate-left'),  'click', handlers.prevent)
+  bean.on(el('calibrate-down'),  'click', handlers.prevent)
+
+
+  // ** Calibration Status **
+  var calibrated = {left:null,right:null,down:null};
+
+
+  var w = 150,
+      h = 150;
+
+  var svg = d3.select("#calibration-status").append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+  var g = svg.append('g')
+        .attr('transform', 'translate(' + w/2 + ', ' + h/2 + ') scale('+Math.min(w,h)/2.5+')');
+
+  g
+    .append('circle')
+    .attr('r',1)
+    .attr('fill','none')
+    .attr('stroke','#eee')
+    .attr('stroke-width',0.02)
+
+  var points = g.selectAll('.point').data(calibrations);
+
+  var modRad  = (Math.PI*2) / modulus;
+
+  function x(d){
+    return d3.round(Math.sin(d.time*modRad),4)
+  }
+
+  function y(d){
+    return d3.round(-Math.cos(d.time*modRad),4)
+  }
+
+  function render(){
+    points = points.data(calibrations)
+    points
+      .enter()
+      .append('circle')
+      .attr('class', 'point')
+      .attr('r', 0.1)
+      .attr('cx', x)
+      .attr('cy', y)
+      .attr('fill', function(d){
+        switch(d.type){
+          case 'left' : return '#ff7f0e'
+          case 'right': return '#08f'
+          case 'down' : return '#f08'
+        }
+        return '#000'
+      });
+    points
+      .exit()
+      .remove()
+  }
+
+
+  bean.on(calibrations, 'modified', render)
+
+
+
+  // ** [Calibration Debug] **
+
+
+
+/*
+
+
 
   var  w = 960, h = 540, modulus = 10000
 
@@ -213,7 +354,7 @@
 
   process()
 
-
+*/
 
 
 
