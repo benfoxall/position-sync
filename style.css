@@ -89,6 +89,11 @@ rect{
   margin: .5em auto auto auto;
   width: 150px;
 }
+#calibrate-reset{
+  font-size: .65em;
+  font-weight: normal;
+  display: none;
+}
 
 footer p{
   -webkit-font-smoothing: antialiased;

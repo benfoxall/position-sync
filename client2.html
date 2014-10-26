@@ -20,7 +20,7 @@
 
   </div>
 
-  <h2>Calibration <small><a href="#" class="icon-">close</a></small></h2>
+  <h2>Calibration <a href="#" class="iscon-" id="calibrate-reset">&times; reset</a></h2>
 
   <div id="calibration" class="icon-">
     <a href="#" id="calibrate-right">right</a>
@@ -49,13 +49,6 @@
 
   <div class="icon-">waiting warning ok close start stop right down left twitter github&nbsp;
     </div>
-  <h1>timestamps</h1>
-  <h1>Calibration</h1>
-  <button>
-
-
-  <div class="area">
-  </div>
   <script src="bower_components/d3/d3.js"></script>
   <script src="bower_components/bean/bean.js"></script>
   <script src="ps.js"></script>
@@ -67,7 +60,7 @@
       modulus = 10000;
 
   // helper functions
-  var el = document.getElementById.bind(document);
+  function el(id){return document.getElementById(id)}
 
   // ** Calibration code **
 
@@ -85,7 +78,8 @@
   var 
     calibrateRight = el('calibrate-right'),
     calibrateLeft = el('calibrate-left'),
-    calibrateDown = el('calibrate-down')
+    calibrateDown = el('calibrate-down'),
+    calibrateReset = el('calibrate-reset');
 
 
   // handlers for populating the calibrations array
@@ -99,8 +93,10 @@
     function make(name){
       return function(e){
         prevent(e)
+
+
         calibrations.push({
-          type: name, 
+          type: calibrated[name] ? 'ignore' : name, 
           time: + new Date()
         })
 
@@ -113,15 +109,26 @@
   })()
 
   // no click for now - want make it instant
-  bean.on(el('calibrate-right'), 'mousedown touchstart', handlers.right)
-  bean.on(el('calibrate-left'),  'mousedown touchstart', handlers.left)
-  bean.on(el('calibrate-down'),  'mousedown touchstart', handlers.down)
+  bean.on(calibrateRight, 'mousedown touchstart', handlers.right)
+  bean.on(calibrateLeft,  'mousedown touchstart', handlers.left)
+  bean.on(calibrateDown,  'mousedown touchstart', handlers.down)
 
   // disable clicks
-  bean.on(el('calibrate-right'), 'click', handlers.prevent)
-  bean.on(el('calibrate-left'),  'click', handlers.prevent)
-  bean.on(el('calibrate-down'),  'click', handlers.prevent)
+  bean.on(calibrateRight, 'click', handlers.prevent)
+  bean.on(calibrateLeft,  'click', handlers.prevent)
+  bean.on(calibrateDown,  'click', handlers.prevent)
 
+  // resetting
+  bean.on(calibrateReset, 'click', function(){
+    if(window.confirm("Discard calibration data?")){
+      reset_calibration()
+    }
+  });
+
+  bean.on(calibrations, 'modified', function(){
+    calibrateReset.style.display = 'inline'
+  })
+  
 
   // ** Calibration Status **
   var calibrated = {left:null,right:null,down:null};
@@ -220,7 +227,7 @@
         return null;
       }
 
-      if(d < modulus*0.1){
+      if(Math.abs(d) < modulus*0.1){
         var avg = ps.average([last, penultimate], modulus)
         return avg;
       } else {
@@ -265,12 +272,12 @@
   var points = g.selectAll('.point').data(calibrations);
   var x_line = svg.append('line').attr({
     x1:0, y1:0, x2: 0, y1: h,
-    stroke: '#eee','stroke-width':2,
+    stroke: '#eee','stroke-width':1,
     transform: 'translate(-10, 0)'
   })
   var y_line = svg.append('line').attr({
     x1:0, y1:0, x2:w, y1:0,
-    stroke: '#eee','stroke-width':2,
+    stroke: '#eee','stroke-width':1,
     transform: 'translate(0, -10)'
   })
   var xy_circle = svg.append('circle').attr({
@@ -304,6 +311,7 @@
           case 'left' : return '#ff7f0e'
           case 'right': return '#08f'
           case 'down' : return '#f08'
+          case 'ignore' : return 'rgba(0,0,0,0.2)'
         }
         return '#000'
       });
@@ -319,11 +327,33 @@
       y_line.attr('transform','translate(0, '+ (d3.round(y*h)+0.5) + ')')
       xy_circle.attr('cy', (d3.round(y*h)+0.5))
     }
+
+    calibrateRight.innerHTML = calibrated.right ? 'ok' : 'right';
+    calibrateLeft.innerHTML = calibrated.left ? 'ok' : 'left';
+    calibrateDown.innerHTML = calibrated.down ? 'ok' : 'down';
+
   }
 
 
   bean.on(calibrations, 'modified', render)
 
+
+  function reset_calibration(){
+    x=null; y=null, offset=null; 
+    calibrated = {left:null,right:null,down:null}; 
+    calibrations.forEach(function(f){f.type = 'ignore'}); 
+
+    y_line.attr('transform','translate(0, -10)');
+    x_line.attr('transform','translate(-10, 0)');
+    xy_circle.attr('cx', -10);
+    xy_circle.attr('cy', -10);
+
+    points.attr('fill', 'rgba(0,0,0,0.1)');
+
+    calibrateReset.style.display = 'none'
+
+    render();
+  }
 
 
   // ** [Calibration Debug] **
