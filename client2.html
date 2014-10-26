@@ -18,8 +18,7 @@
   <script src="ps.js"></script>
   <script type="text/javascript">
 
-  var w = 300,
-      h = 300;
+  var  w = 960, h = 540, modulus = 10000
 
   var svg = d3.select("body").append("svg")
     .attr("width", w)
@@ -27,12 +26,10 @@
 
   var g = svg.append('g')
             .attr('fill', 'green')
-            .attr('transform', 'translate(' + w/2 + ', ' + h/2 + ') scale('+w/2.5+')');
+            .attr('transform', 'translate(' + w/2 + ', ' + h/2 + ') scale('+Math.min(w,h)/2.5+')');
 
 
-  var modulus = 10000,
-      modRad  = (Math.PI*2) / modulus,
-      timestamps = [];
+  var modRad  = (Math.PI*2) / modulus;
 
 
   // timestamps of calibration buttons
@@ -89,6 +86,8 @@
     })
     console.log(e.keyCode)
     render();
+
+    process()
   })
 
 
@@ -133,42 +132,26 @@
 
       console.log("X", x);
 
+      if(down !== null){
+        var y = (ps.distance(midpoint, down, modulus) / (0.25*modulus));
 
-      var y = (ps.distance(midpoint, down, modulus) / (0.25*modulus));
+        // 0 -> 1
+        y = (y/2)+0.5;
 
-      // 0 -> 1
-      y = (y/2)+0.5;
+        // 0 -> h
+        y = y*h;
 
-      // 0 -> h
-      y = y*h;
-
-      console.log("Y", y);
-
-
+        console.log("Y", y);
 
         debug.append('circle')
           .attr('r',10)
           .attr('cx',x)
           .attr('cy',y)
           .attr('fill','rgba(255,0,0,0.3)')
-
+      }
     }
-
-
-    // var x, midpoint;
-    // if(right !== null && left !== null){
-    //   x = ps.distance(left, right, modulus) / modulus / 2
-    //   midpoint = ps.average([left, right], modulus)
-    //   console.log("x", x)
-    // }
-
-    // var y
-    // if(midpoint && down !== null){
-    //   y = ps.distance(midpoint, down, modulus) / modulus
-    //   console.log("y", y)
-    // }
-
   }
+
 
   // the most recent averaged point
   function point(timestamps){
@@ -177,16 +160,18 @@
         penultimate = timestamps[timestamps.length - 2];
 
     if(last && penultimate){
-
       var d = ps.distance(last, penultimate, modulus);
 
-      console.log("distance", d, last, penultimate)
-      if(d < modulus*0.1){
-        console.log("OK!")
+      if(Math.abs(last - penultimate) < modulus/2){
+        console.log("found points, but too close together (pre modulation)")
+        return null;
+      }
 
+      if(d < modulus*0.1){
         var avg = ps.average([last, penultimate], modulus)
-        // console.log(avg)
         return avg;
+      } else {
+        console.log("found points, but not close enough")
       }
     }
 
@@ -195,20 +180,6 @@
   }
 
   process()
-
-
-
-
-
-
-
-        // svg.append('circle')
-        //   .attr('r',10)
-        //   .attr('cx',client_x*w)
-        //   .attr('cy',(1-client_y)*h)
-        //   .attr('fill','rgba(255,0,0,0.3)')
-
-
 
 
 
