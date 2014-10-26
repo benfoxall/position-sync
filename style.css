@@ -95,6 +95,30 @@ rect{
   display: none;
 }
 
+.demo{
+  text-align: center;
+  margin:3em 0;
+}
+.demo-title{
+  border-top:1px solid #eee;
+  font-size: 3em
+}
+.demo-start{
+  font-size:7em;
+}
+.demo-warning{
+  display: block;
+  color: #F90A0A;
+  font-weight: bold;
+  max-width: 14em;
+  margin: auto;
+}
+.demo-warning .icon-{
+  display: block;
+  font-size: 1.4em;
+  margin-bottom: 0.3em;
+}
+
 footer p{
   -webkit-font-smoothing: antialiased;
   background: #000;
