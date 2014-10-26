@@ -129,3 +129,25 @@ footer a{
   display: block;
 }
 
+#demo{
+  display: none;
+  position: fixed;
+  top: 0;
+  bottom:0;
+  left:0;
+  right:0;
+  background: rgba(255,255,255,0.9);
+}
+#demo-close{
+  float:right;
+  font-size: 1.5em;
+  margin:.5em;
+  color:#fff;
+}
+#demo-header{
+  background: rgba(0,0,0,0.9);
+  -webkit-font-smoothing:antialiased;
+}
+#demo-title{
+  color:#fff;
+}

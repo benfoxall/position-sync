@@ -30,12 +30,12 @@
     <div id="calibration-status"></div>
   </div>
 
-  <div id="post-calibration" class="demos">
+  <div id="demos">
 
     <div class="demo">
       <h3 class="demo-title">Demo #1 </h3>
       <p>
-        <a class="demo-start" href="#"><span class="icon-">start</span></a>
+        <a class="demo-start" href="#" id="demo-start-1"><span class="icon-">start</span></a>
       </p>
     </div>
 
@@ -43,7 +43,7 @@
       <h3 class="demo-title">Demo #2 </h3>
       <p class="demo-warning"><span class="icon-">warning</span>This will cause the screen to flash on and off</p>
       <p>
-        <a class="demo-start" href="#"><span class="icon-">start</span></a>
+        <a class="demo-start" href="#" id="demo-start-2"><span class="icon-">start</span></a>
       </p>
     </div>
 
@@ -60,6 +60,15 @@
     </p>
   </footer>
 
+
+  <div id="demo">
+    <div id="demo-header">
+      <a href="#demos" class="icon-" id="demo-close">close</a>
+      <h2 id="demo-title">
+        Demo title
+      </h2>
+    </div>
+  </div>
 
 
   <div class="icon-">waiting warning ok close start stop right down left twitter github&nbsp;
@@ -371,180 +380,39 @@
   }
 
 
-  // ** [Calibration Debug] **
 
 
+  // DEMOS!!!
 
-/*
-
-
-
-  var  w = 960, h = 540, modulus = 10000
-
-  var svg = d3.select("body").append("svg")
-    .attr("width", w)
-    .attr("height", h);
-
-  var g = svg.append('g')
-            .attr('fill', 'green')
-            .attr('transform', 'translate(' + w/2 + ', ' + h/2 + ') scale('+Math.min(w,h)/2.5+')');
+  var demoPanel   = el('demo'),
+      demoClose   = el('demo-close'),
+      demoTitle   = el('demo-title'),
+      demoStart1  = el('demo-start-1'),
+      demoStart2  = el('demo-start-2'),
+      bodyElement = document.getElementsByTagName('body')[0];
 
 
-  var modRad  = (Math.PI*2) / modulus;
-
-
-  // timestamps of calibration buttons
-  var calibrations = [];
-
-  // calibrations = [{"key":37,"time":1414273414062},{"key":40,"time":1414273414965},{"key":39,"time":1414273417828},{"key":37,"time":1414273424052},{"key":40,"time":1414273424821},{"key":39,"time":1414273427812}]
-
-  // debug output
-
-  var debug = d3.select('.area')
-    .style('width',  w + 'px')
-    .style('height', h + 'px')
-    .append('svg')
-    .attr('height', h)
-    .attr('width', w);
-
-
-  function render(){
-
-    var times = g.selectAll('circle').data(calibrations)
-
-    times
-      .enter()
-      .append('circle')
-      .style('opacity', 0.8)
-      .attr('r', .1)
-      .attr('cx', x)
-      .attr('cy', y)
-      .attr('fill', function(d){
-        return d.key == 39 ? 'green' : // right
-               d.key == 37 ? 'red' : // left
-               d.key == 40 ? 'yellow' : // down
-               'rgba(0,0,0,0.3)'
-      })
-
-
-    function x(d){
-      return d3.round(Math.sin(d.time*modRad),4)
-    }
-
-    function y(d){
-      return d3.round(-Math.cos(d.time*modRad),4)
-    }
-
-  }
-
-  render();
-
-
-  document.addEventListener('keydown', function(e){
-    calibrations.push({
-      key: e.keyCode,
-      time: + new Date
-    })
-    console.log(e.keyCode)
-    render();
-
-    process()
+  bean.on(demoClose, 'click', function(e){
+    e.preventDefault();
+    demoPanel.style.display = 'none';
+    bodyElement.style.overflow = 'auto';
   })
 
 
-  // look for calibration
-  function process(){
-    var rights = calibrations.filter(function(c){
-      return c.key == 39 // right
-    }).map(function(d){
-      return d.time
-    })
-    var right = point(rights);
+  bean.on(demoStart1, 'click', function(e){
+    e.preventDefault();
+    demoPanel.style.display = 'block';
+    bodyElement.style.overflow = 'hidden';
+    demoTitle.innerHTML = 'Demo #1'
 
+  })
 
-    var lefts = calibrations.filter(function(c){
-      return c.key == 37 // left
-    }).map(function(d){
-      return d.time
-    })
-    var left = point(lefts);
-
-
-    var downs = calibrations.filter(function(c){
-      return c.key == 40 // down
-    }).map(function(d){
-      return d.time
-    })
-    var down = point(downs);
-
-
-    if(right !== null && left !== null){
-
-      var midpoint = ps.average([left, right], modulus);
-
-      // -1 -> 1
-      var x = (ps.distance(midpoint, right, modulus) / (0.25*modulus));
-
-      // 0 -> 1
-      x = (x/2)+0.5;
-
-      // 0 -> w
-      x = x*w;
-
-      console.log("X", x);
-
-      if(down !== null){
-        var y = (ps.distance(midpoint, down, modulus) / (0.25*modulus));
-
-        // 0 -> 1
-        y = (y/2)+0.5;
-
-        // 0 -> h
-        y = y*h;
-
-        console.log("Y", y);
-
-        debug.append('circle')
-          .attr('r',10)
-          .attr('cx',x)
-          .attr('cy',y)
-          .attr('fill','rgba(255,0,0,0.3)')
-      }
-    }
-  }
-
-
-  // the most recent averaged point
-  function point(timestamps){
-    // are the last two close enough to be a match?
-    var last        = timestamps[timestamps.length - 1],
-        penultimate = timestamps[timestamps.length - 2];
-
-    if(last && penultimate){
-      var d = ps.distance(last, penultimate, modulus);
-
-      if(Math.abs(last - penultimate) < modulus/2){
-        console.log("found points, but too close together (pre modulation)")
-        return null;
-      }
-
-      if(d < modulus*0.1){
-        var avg = ps.average([last, penultimate], modulus)
-        return avg;
-      } else {
-        console.log("found points, but not close enough")
-      }
-    }
-
-    return null;
-
-  }
-
-  process()
-
-*/
-
-
+  bean.on(demoStart2, 'click', function(e){
+    e.preventDefault();
+    demoPanel.style.display = 'block';
+    bodyElement.style.overflow = 'hidden';
+    demoTitle.innerHTML = 'Demo #2'
+  })
 
   </script>
 
