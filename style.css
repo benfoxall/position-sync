@@ -4,6 +4,10 @@ body{
 h1,h2,h3,h4,h5,h6{
   color: #454545;
 }
+hr{
+  border:none;
+  border-bottom:1px solid #eee;
+}
 a{
   color:#08f;
   text-decoration: none
@@ -12,7 +16,7 @@ a:hover{
   text-decoration: underline
 }
 svg{
-  outline: 1px solid red;
+  outline: 1px solid #ccc;
 }
 line{
   stroke: red;

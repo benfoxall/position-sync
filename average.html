@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Average</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <style type="text/css">
+    svg{
+      display:block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Average %12</h1>
+
+  <script src="bower_components/d3/d3.js"></script>
+  <script type="text/javascript">
+
+  var width = 300,
+      height = 300;
+
+  var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  var g = svg.append('g')
+            .attr('fill', 'green')
+            .attr('transform', 'translate(' + width/2 + ', ' + height/2 + ')');
+
+
+var r = 50,
+    o = (Math.PI*2)/12,
+    x = function(value){
+      return Math.cos(value * o) * r
+    },
+    y = function(value){
+      return -Math.sin(value * o) * r
+    };
+
+var values = [9, 1, 9.5, 0.5, 0.4, 0.2, 5, 9.4, 9.9, 0, 10, 10.2],
+    modulus = 10;
+
+
+// map {0 -> modulus}* to 0 -> 1
+var angles = values.map(function(v){
+  return (v % modulus) / modulus
+})
+
+console.log(angles);
+
+
+// convert to unit vectors
+var vectors = angles.map(function(a){
+  return {
+    x:   Math.cos(a * Math.PI * 2),
+    y: - Math.sin(a * Math.PI * 2)
+  }
+})
+
+console.log(vectors)
+
+
+// find the average angle by summing unit vectors
+var sum = vectors.reduce(function(memo, vector){
+  memo.x += vector.x/vectors.length;
+  memo.y += vector.y/vectors.length;
+  return memo;
+},{x:0,y:0})
+
+console.log(sum);
+
+var a = Math.atan2(sum.x, sum.y);
+
+if(a < 0){
+  a += Math.PI*2;
+  a = a % Math.PI*2;
+}
+
+a = a + (Math.PI/4)
+a = a % Math.PI*2;
+
+
+console.log(a)
+
+var p = (Math.atan2(sum.x, sum.y) / (Math.PI * 2)) * modulus
+var p = (a / (Math.PI * 2)) * modulus
+
+console.log(p)
+
+
+g.selectAll('circle.v')
+  .data(vectors)
+  .enter()
+    .append('circle')
+    .attr('class', 'v')
+    .attr('r', 5)
+    .attr('fill', 'blue')
+    .style('opacity', 0.5)
+    .attr('cx', function(d){return d.x * 50})
+    .attr('cy', function(d){return d.y * 50})
+
+
+g.selectAll('circle.va')
+  .data([sum])
+  .enter()
+    .append('circle')
+    .attr('class', 'va')
+    .attr('r', 5)
+    .attr('fill', 'red')
+    .attr('cx', function(d){return d.x * 50})
+    .attr('cy', function(d){return d.y * 50})
+
+
+
+
+
+
+
+  </script>
+
+</body>
+</html>

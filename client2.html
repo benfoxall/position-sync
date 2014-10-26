@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>timestamps</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <style type="text/css">
+    svg{
+      display:block;
+    }
+  </style>
+</head>
+<body>
+  <h1>timestamps</h1>
+  <div class="area">
+  </div>
+  <script src="bower_components/d3/d3.js"></script>
+  <script src="ps.js"></script>
+  <script type="text/javascript">
+
+  var w = 300,
+      h = 300;
+
+  var svg = d3.select("body").append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+  var g = svg.append('g')
+            .attr('fill', 'green')
+            .attr('transform', 'translate(' + w/2 + ', ' + h/2 + ') scale('+w/2.5+')');
+
+
+  var modulus = 10000,
+      modRad  = (Math.PI*2) / modulus,
+      timestamps = [];
+
+
+  // timestamps of calibration buttons
+  var calibrations = [];
+
+  // calibrations = [{"key":37,"time":1414273414062},{"key":40,"time":1414273414965},{"key":39,"time":1414273417828},{"key":37,"time":1414273424052},{"key":40,"time":1414273424821},{"key":39,"time":1414273427812}]
+
+  // debug output
+
+  var debug = d3.select('.area')
+    .style('width',  w + 'px')
+    .style('height', h + 'px')
+    .append('svg')
+    .attr('height', h)
+    .attr('width', w);
+
+
+  function render(){
+
+    var times = g.selectAll('circle').data(calibrations)
+
+    times
+      .enter()
+      .append('circle')
+      .style('opacity', 0.8)
+      .attr('r', .1)
+      .attr('cx', x)
+      .attr('cy', y)
+      .attr('fill', function(d){
+        return d.key == 39 ? 'green' : // right
+               d.key == 37 ? 'red' : // left
+               d.key == 40 ? 'yellow' : // down
+               'rgba(0,0,0,0.3)'
+      })
+
+
+    function x(d){
+      return d3.round(Math.sin(d.time*modRad),4)
+    }
+
+    function y(d){
+      return d3.round(-Math.cos(d.time*modRad),4)
+    }
+
+  }
+
+  render();
+
+
+  document.addEventListener('keydown', function(e){
+    calibrations.push({
+      key: e.keyCode,
+      time: + new Date
+    })
+    console.log(e.keyCode)
+    render();
+  })
+
+
+  // look for calibration
+  function process(){
+    var rights = calibrations.filter(function(c){
+      return c.key == 39 // right
+    }).map(function(d){
+      return d.time
+    })
+    var right = point(rights);
+
+
+    var lefts = calibrations.filter(function(c){
+      return c.key == 37 // left
+    }).map(function(d){
+      return d.time
+    })
+    var left = point(lefts);
+
+
+    var downs = calibrations.filter(function(c){
+      return c.key == 40 // down
+    }).map(function(d){
+      return d.time
+    })
+    var down = point(downs);
+
+
+    if(right !== null && left !== null){
+
+      var midpoint = ps.average([left, right], modulus);
+
+      // -1 -> 1
+      var x = (ps.distance(midpoint, right, modulus) / (0.25*modulus));
+
+      // 0 -> 1
+      x = (x/2)+0.5;
+
+      // 0 -> w
+      x = x*w;
+
+      console.log("X", x);
+
+
+      var y = (ps.distance(midpoint, down, modulus) / (0.25*modulus));
+
+      // 0 -> 1
+      y = (y/2)+0.5;
+
+      // 0 -> h
+      y = y*h;
+
+      console.log("Y", y);
+
+
+
+        debug.append('circle')
+          .attr('r',10)
+          .attr('cx',x)
+          .attr('cy',y)
+          .attr('fill','rgba(255,0,0,0.3)')
+
+    }
+
+
+    // var x, midpoint;
+    // if(right !== null && left !== null){
+    //   x = ps.distance(left, right, modulus) / modulus / 2
+    //   midpoint = ps.average([left, right], modulus)
+    //   console.log("x", x)
+    // }
+
+    // var y
+    // if(midpoint && down !== null){
+    //   y = ps.distance(midpoint, down, modulus) / modulus
+    //   console.log("y", y)
+    // }
+
+  }
+
+  // the most recent averaged point
+  function point(timestamps){
+    // are the last two close enough to be a match?
+    var last        = timestamps[timestamps.length - 1],
+        penultimate = timestamps[timestamps.length - 2];
+
+    if(last && penultimate){
+
+      var d = ps.distance(last, penultimate, modulus);
+
+      console.log("distance", d, last, penultimate)
+      if(d < modulus*0.1){
+        console.log("OK!")
+
+        var avg = ps.average([last, penultimate], modulus)
+        // console.log(avg)
+        return avg;
+      }
+    }
+
+    return null;
+
+  }
+
+  process()
+
+
+
+
+
+
+
+        // svg.append('circle')
+        //   .attr('r',10)
+        //   .attr('cx',client_x*w)
+        //   .attr('cy',(1-client_y)*h)
+        //   .attr('fill','rgba(255,0,0,0.3)')
+
+
+
+
+
+
+
+  </script>
+
+</body>
+</html>
