@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>timestamps</title>
+  <title>Hello</title>
   <meta name="viewport" content="width=device-width">
   <link rel="stylesheet" href="icons/style.css"></head>
   <link rel="stylesheet" type="text/css" href="style.css">
@@ -392,6 +392,9 @@
 
   // DEMOS!!!
 
+  // ensure demo background has been loaded
+  (new Image).src = 'demo-bg.jpg';
+
   var demoPanel   = el('demo'),
       demoClose   = el('demo-close'),
       demoTitle   = el('demo-title'),
@@ -401,16 +404,25 @@
       bodyElement = document.getElementsByTagName('body')[0];
 
 
+  var demoReset;
+
+
   bean.on(demoClose, 'click', function(e){
     e.preventDefault();
     demoPanel.style.display = 'none';
     bodyElement.style.overflow = 'auto';
+    if(demoReset){
+      demoReset(); demoReset = null;
+    }
   })
 
   bean.on(window, 'keyup',function(e){
     if (e.keyCode == 27){
       demoPanel.style.display = 'none';
       bodyElement.style.overflow = 'auto';
+      if(demoReset){
+        demoReset(); demoReset = null;
+      }
     }
   })
 
@@ -418,8 +430,19 @@
     e.preventDefault();
     demoPanel.style.display = 'block';
     bodyElement.style.overflow = 'hidden';
-    demoTitle.innerHTML = 'Demo #1'
+    demoTitle.innerHTML = 'Demo #1';
 
+    demoPanel.className = 'bg-position';
+
+    demoPanel.style.backgroundPosition = [
+      Math.round((x||0)*100) + '%',
+      Math.round((y||0)*100) + '%'
+    ].join(' ')
+
+    demoReset = function(){
+      demoPanel.className = '';
+      demoPanel.style.backgroundPosition = '';
+    }
   })
 
   bean.on(demoStart2, 'click', function(e){
@@ -436,6 +459,40 @@
     bodyElement.style.overflow = 'hidden';
     demoTitle.innerHTML = 'Demo #3'
   })
+
+  function debug(){
+    g.remove()
+    for (var x = 0.95; x >= 0; x-=0.05) {
+      for (var y = 0.95; y >= 0; y-=0.05) {
+        var xr = (x-.5)*2,
+            yr = (y-.5)*2;
+        var a = Math.atan2(xr, yr);
+        // if(a < 0){
+        //   a = (a + Math.PI*2) % (Math.PI*2);
+        // }
+
+        a = (a/Math.PI*2)*90
+
+        var d = Math.sqrt((xr*xr)+(yr*yr));
+        // console.log(d)
+        if(d > 1){
+          d = 1;
+        }
+
+        svg
+          .append('circle')
+          .attr({
+            r:2, 
+            cx: x*w,
+            cy: y*h,
+            fill: 'hsl('+d3.round(a)+', '+d3.round(d*100)+'%, 50%)'
+          })
+      }
+    };
+  }
+
+  // debug()
+
 
   </script>
 

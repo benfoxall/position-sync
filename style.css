@@ -151,3 +151,7 @@ footer a{
 #demo-title{
   color:#fff;
 }
+#demo.bg-position{
+  background-image: url(demo-bg.jpg);
+  background-size: 1500%;
+}
