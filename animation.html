@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Animation</title>
+</head>
+<body>
+<script src="bower_components/tweenjs/src/Tween.js"></script>
+<canvas width="500" height="500"></canvas>
+<script type="text/javascript">
+    var canvas = document.querySelector('canvas'),
+        ctx = canvas.getContext('2d')
+
+    var data = {grey:0};
+    var tween = new TWEEN.Tween(data)
+
+    tween
+        .to({grey:1}, 15000)
+        .onUpdate(function() {
+
+          var v = stepper(this.grey);
+          if(v < 0.2) v = 0;
+          if(v > 0.8) v = 1;
+
+          var g = (~~(v*255)).toString(16);
+
+          if(g.length == 1) g = '0' + g;
+
+          ctx.fillStyle = '#' + g + g + g;
+          ctx.fillRect(0,0,canvas.width, canvas.height)
+
+        })
+        .repeat(2)// will go on n+1 times
+        .start()
+
+
+    // This generates a stepper that I can only really describe when
+    // I'm at a whiteboard and have three different coloured pens
+    function generateStepper(steps, initial){
+      var c = steps * initial * 2 * Math.PI;
+      return function(i){
+        return (-Math.cos((~~(i * steps)+1) * i * c) + 0.5)
+      }
+    }
+
+    var stepper = generateStepper(5,1);
+
+
+    function render () {
+      requestAnimationFrame(render)
+      TWEEN.update();
+    }
+    render()
+</script>
+</body>
+</html>
