@@ -450,6 +450,14 @@
     demoPanel.style.display = 'block';
     bodyElement.style.overflow = 'hidden';
     demoTitle.innerHTML = 'Demo #2'
+
+    demoPanel.style.backgroundColor = fillHSL(x||0, y||0);
+
+    demoReset = function(){
+      demoPanel.className = '';
+      demoPanel.style.backgroundColor = '';
+    }
+
   })
 
 
@@ -464,20 +472,8 @@
     g.remove()
     for (var x = 0.95; x >= 0; x-=0.05) {
       for (var y = 0.95; y >= 0; y-=0.05) {
-        var xr = (x-.5)*2,
-            yr = (y-.5)*2;
-        var a = Math.atan2(xr, yr);
-        // if(a < 0){
-        //   a = (a + Math.PI*2) % (Math.PI*2);
-        // }
-
-        a = (a/Math.PI*2)*90
-
-        var d = Math.sqrt((xr*xr)+(yr*yr));
-        // console.log(d)
-        if(d > 1){
-          d = 1;
-        }
+        // var xr = (x-.5)*2,
+        //     yr = (y-.5)*2;
 
         svg
           .append('circle')
@@ -485,13 +481,29 @@
             r:2, 
             cx: x*w,
             cy: y*h,
-            fill: 'hsl('+d3.round(a)+', '+d3.round(d*100)+'%, 50%)'
+            fill: fillHSL(x,y)
           })
       }
     };
   }
 
   // debug()
+
+  // return an hsl fill based on the position of the client
+  function fillHSL(_x,_y){
+    var x    = (_x*2)-1,
+        y    = (_y*2)-1,
+        a    = Math.atan2(x, y),
+        d    = Math.sqrt((x*x)+(y*y));
+
+    // convert / constrain
+    if(a < 0) a = (a + Math.PI*2) % (Math.PI*2);
+    a = (a/Math.PI*2)*90;
+
+    if(d > 1) d = 1;
+
+    return 'hsl('+d3.round(a)+', '+d3.round(d*100)+'%, 50%)'
+  }
 
 
   </script>

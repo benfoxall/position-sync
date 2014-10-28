@@ -10,11 +10,14 @@
 
   <div class="area"></div>
 
-  <button onclick="epoch = + new Date">START</button>
-  <button onclick="state = 'left'" >&larr;</button>
   <button onclick="state = 'right'">&rarr;</button>
+  <button onclick="state = 'left'" >&larr;</button>
   <button onclick="state = 'down'" >&darr;</button>
-  <button onclick="state = ''" >&times;</button>
+  <button onclick="state = 'all'" >all</button>
+  <button onclick="state = ''" >none</button>
+
+  <br />
+  <button id="start-video">Start Video</button>
 
   <button id="timestamp">timestamp</button>
   <h2 id="timestamp_result">-</h2>
@@ -23,7 +26,7 @@
   <script src="bower_components/d3/d3.js"></script>
   <script type="text/javascript">
   
-  var w = 960, h = 540, duration = 10000;
+  var w = 960, h = 540, modulus = 10000;
 
 
   var svg = d3.select('.area')
@@ -33,117 +36,101 @@
     .attr('height', h)
     .attr('width', w);
 
-
-  var rect_h = svg.append('rect').attr({width:0, height: h});
-  var rect_v = svg.append('rect').attr({width:w, height: h, y:h});
-
-  var epoch, state;
+  var state;
 
   // the offset within the period
   function offset(){
-    return (((+ new Date) - (epoch||0)) % duration) / duration
+    return ((+ new Date) % modulus) / modulus
   }
 
   var rightLine = svg.append('line').attr({x0:0, y0:0, x1: 0, y1: h, 
-    'stroke-width':3, stroke:'#08f'})
+    'stroke-width':4, stroke:'#08f'})
   var leftLine  = svg.append('line').attr({x0:0, y0:0, x1: 0, y1: h,
-    'stroke-width':3, stroke:'#ff7f0e'})
+    'stroke-width':4, stroke:'#ff7f0e'})
   var downLine  = svg.append('line').attr({x0:0, y0:0, x1: w, y1: 0,
-    'stroke-width':3, stroke:'#f08'})
+    'stroke-width':4, stroke:'#f08'})
 
+  var stop, last_state;
   function render(){
+    if(stop)return;
     requestAnimationFrame(render);
-    if(epoch){
-      var o = offset() * 2;
-      if(state == 'right'){
+    
+    var o = offset() * 2;
 
-      }
+    if(state !== 'last_state'){
+      rightLine.attr('transform', 'translate(-10, 0)')
+      leftLine .attr('transform', 'translate(-10, 0)')
+      downLine .attr('transform', 'translate(0, -10)')
 
-      rightLine.attr('transform', 'translate('+o*w+', 0)')
-      leftLine.attr('transform', 'translate('+(1-o)*w+' ,0)')
-      downLine.attr('transform', 'translate(0, '+o*h+')')
-
+      last_state = state;
     }
+
+    if(state == 'right'){
+      rightLine.attr('transform', 'translate('+o*w+', 0)')
+    } else
+    if(state == 'left'){
+      leftLine.attr('transform',  'translate('+(1-o)*w+' ,0)')
+    } else
+    if(state == 'down'){
+      downLine.attr('transform',  'translate(0, '+o*h+')')
+    } else
+    if(state == 'all'){
+      rightLine.attr('transform', 'translate('+o*w+', 0)')
+      leftLine.attr('transform',  'translate('+(1-o)*w+' ,0)')
+      downLine.attr('transform',  'translate(0, '+o*h+')')
+    }
+
+
+    
+    
+    
+
   }
 
   render();
 
 
-
-  // function sync(){
-
-  //   epoch = (duration*2) + +new Date;
-
-  //   rect_h
-  //     .transition()
-  //     .ease("linear")
-  //     .duration(duration)
-  //     .attr('width', w);
-
-  //   rect_h
-  //     .transition()
-  //     .ease("linear")
-  //     .delay(duration)
-  //     .duration(duration)
-  //     .attr('width', 0);
-
-  //   rect_v
-  //     .transition()
-  //     .delay(duration*2)
-  //     .ease("linear")
-  //     .duration(duration)
-  //     .attr('y', 0);
-
-  //   rect_v
-  //     .transition()
-  //     .ease("linear")
-  //     .delay(duration*3)
-  //     .duration(duration)
-  //     .attr('y', h);
-
-  // }
-
-  // // sync()
-
-  // d3.select('#sync').on('click', function(){
-  //   setTimeout(sync, 1000)
-  // })
-
-  var past = [], client_epoch, client_x, client_y;
-  function handle(e){
-    // e.preventDefault();
-    past.unshift(+ new Date);
-    if(past.length > 3){
-
-      // is calibrated
-      var a = (past[2] + past[3])/2,
-          b = (past[0] + past[1])/2,
-          diff = b - a;
-
-      if(diff > duration*1.7 && a - b < duration*2.3){
-        console.log("calibrated!")
-        client_epoch = (a + b)/2;
-
-        client_y = 1 - ((past[0] - past[1]) / duration / 2)
-        client_x = 1 - ((past[2] - past[3]) / duration / 2)
-
-        svg.append('circle')
-          .attr('r',10)
-          .attr('cx',client_x*w)
-          .attr('cy',(1-client_y)*h)
-          .attr('fill','rgba(255,0,0,0.3)')
-      }
-
-    }
-  }
-
-  d3.select("#calibrate").on('mousedown', handle)
-  d3.select("#calibrate").on('mouseup', handle)
-
   d3.select("#timestamp").on('click', function(){
     d3.select('#timestamp_result').text((+new Date)- epoch);
   })
 
+
+  navigator.getUserMedia = ( navigator.getUserMedia ||
+                       navigator.webkitGetUserMedia ||
+                       navigator.mozGetUserMedia ||
+                       navigator.msGetUserMedia);
+
+  d3.select("#start-video").on('click', function(){
+    navigator.getUserMedia (
+
+      // constraints
+      {
+         video: {
+          mandatory: {
+            minWidth: w,
+            minHeight: h,
+            maxWidth: w,
+            maxHeight: h
+          }
+         },
+         audio: false
+      },
+
+      // successCallback
+      function(localMediaStream) {
+         var video = document.createElement('video');         
+         video.src = window.URL.createObjectURL(localMediaStream);
+         video.play();
+
+         document.querySelector('.area').appendChild(video)
+      },
+
+      // errorCallback
+      function(err) {
+         console.log("The following error occured: " + err);
+      }
+   );
+  });
 
   </script>
 

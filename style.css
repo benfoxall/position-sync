@@ -38,6 +38,14 @@ rect{
   overflow: hidden;
   background-size: cover;
 }
+.area video{
+  position: absolute;
+  transform: scaleX(-1);
+}
+.area svg{
+  position: absolute;
+  z-index: 1;
+}
 
 .cover{
   /*width: 100px;*/
