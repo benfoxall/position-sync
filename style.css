@@ -146,6 +146,11 @@ footer a{
   right:0;
   background: rgba(255,255,255,0.9);
 }
+#demo canvas{
+  position: absolute;
+  top:0;
+  z-index: 4;
+}
 #demo-close{
   float:right;
   font-size: 1.5em;
@@ -155,6 +160,9 @@ footer a{
 #demo-header{
   background: rgba(0,0,0,0.9);
   -webkit-font-smoothing:antialiased;
+  position: absolute;
+  width: 100%;
+  z-index: 5;
 }
 #demo-title{
   color:#fff;
