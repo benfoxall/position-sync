@@ -49,7 +49,7 @@
 
     <div class="demo">
       <h3 class="demo-title">Demo #3 </h3>
-      <p class="demo-warning"><span class="icon-">warning</span>This will cause the screen to flash on and off</p>
+      <p class="demo-warning"><span class="icon-">warning</span>This will cause your screen to flash on and off</p>
       <p>
         <a class="demo-start" href="#" id="demo-start-3"><span class="icon-">start</span></a>
       </p>
@@ -83,6 +83,8 @@
     </div>
   <script src="bower_components/d3/d3.js"></script>
   <script src="bower_components/bean/bean.js"></script>
+  <script src="bower_components/tweenjs/src/Tween.js"></script>
+  <script src="syncDemo.js"></script>
   <script src="ps.js"></script>
   <script type="text/javascript">
 
@@ -465,10 +467,60 @@
     e.preventDefault();
     demoPanel.style.display = 'block';
     bodyElement.style.overflow = 'hidden';
-    demoTitle.innerHTML = 'Demo #3'
+    demoTitle.innerHTML = 'Demo #3';
+
+    // create a canvas
+    var canvas = document.createElement('canvas');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    demoPanel.appendChild(canvas);
+
+    var syncDemo = new SyncDemo(canvas, offset)
+
+    syncDemo.start();
+
+    demoReset = function(){
+      demoPanel.removeChild(canvas)
+      syncDemo.cancel();
+    }
+
   })
 
-  function debug(){
+
+  // debugging
+
+  if(window.parent !== window){
+    console.log("listening")
+    window.addEventListener('message', function(e){
+      
+      var data = e.data || {};
+      if(data.setup){
+        x = data.setup.x;
+        y = data.setup.y;
+        render();
+      } else if(data.demo){
+        demoClose.click();
+
+        if(data.demo === 1){
+          demoStart1.click()
+        }
+        if(data.demo === 2){
+          demoStart2.click()
+        }
+        if(data.demo === 3){
+          demoStart3.click()
+        }
+      } else {
+        console.log("unhandled message ", data)
+      }
+
+    }, false)
+  }
+
+
+  function paintHSL(){
     g.remove()
     for (var x = 0.95; x >= 0; x-=0.05) {
       for (var y = 0.95; y >= 0; y-=0.05) {
@@ -487,7 +539,7 @@
     };
   }
 
-  // debug()
+  // paintHSL()
 
   // return an hsl fill based on the position of the client
   function fillHSL(_x,_y){
