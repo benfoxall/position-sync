@@ -21,7 +21,13 @@
 
 
 	function SyncDemo(canvas, offset){
-    var ctx = canvas.getContext('2d');
+    var ctx = canvas.getContext('2d')
+
+    if(typeof(offset) == 'undefined'){
+      console.warn('undefined offset')
+      offset = 0
+    }
+    
 
     //
     // initial (out of sync) flashing
