@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Debug</title>
+    <meta charset="utf-8">
     <style type="text/css"></style>
     <link rel="stylesheet" type="text/css" href="style.css">
     <style type="text/css">
@@ -38,9 +39,15 @@
 <button onclick="demo(1)">Demo #1</button>
 <button onclick="demo(2)">Demo #2</button>
 <button onclick="demo(3)">Demo #3</button>
+<button onclick="demo(3, true)">Demo #3 (stagger)</button>
 
 <!-- <iframe src="master2.html" width="100%" style="margin-top:1em;"></iframe> -->
 
+
+<div id="timer"></div>
+
+
+<script src="bower_components/d3/d3.js"></script>
 <script type="text/javascript">
 
 function setup(){
@@ -54,9 +61,77 @@ function setup(){
 
 function demo(i, staggered){
     [].forEach.call(document.querySelectorAll('.debug iframe'), function(frame){
-        frame.contentWindow.postMessage({demo:i},'*')
+        if(staggered){
+            setTimeout(function(){
+                frame.contentWindow.postMessage({demo:i},'*')
+            }, Math.random()*5000)
+        } else {
+            frame.contentWindow.postMessage({demo:i},'*')    
+        }
     })
 }
+
+var timer_size = 150;
+var timer = d3.select('#timer')
+    .append('svg')
+    .attr('width', timer_size)
+    .attr('height', timer_size)
+
+var g = timer.append('g')
+        .attr('transform', 'translate(' + timer_size/2 + ', ' + timer_size/2 + ') scale('+timer_size/2.5+')');
+
+g.append('circle')
+    .attr('r',1)
+    .attr('stroke-width',0.02)
+    .attr('fill', 'none')
+    .attr('stroke', '#aaa')
+
+var now = g.append('circle')
+    .attr('r',.1)
+    .attr('fill', '#08f')
+    .attr('cx',-1)
+
+var x = function(i){
+    return Math.sin(i*(Math.PI*2/10000))
+}
+var y = function(i){
+    return -Math.cos(i*(Math.PI*2/10000))
+}
+
+function render_timer(){
+    requestAnimationFrame(render_timer);
+
+    now
+        .datum(+new Date)
+        .attr('cx', x)
+        .attr('cy', y)
+}
+
+render_timer();
+
+function add(colour){
+    var d = + new Date;
+    g.append('circle')
+        .attr('cx', x(d))
+        .attr('cy', y(d))
+        .attr('r',.1)
+        .attr('fill', '#f08')    
+}
+
+
+  timeWorker = new Worker("worker.js");
+  timeWorker.onmessage = function(oEvent){
+    console.log(oEvent.data - (+new Date));
+  }
+
+
+
+// t = new Timer('#timer');
+
+// timer('#timer')
+    // .start()
+    // .add()
+
 
 </script>
 
