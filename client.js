@@ -275,6 +275,10 @@
       xy_circle.attr('cy', (d3.round(y*h)+0.5))
     }
 
+    if(x && y){
+      document.getElementsByTagName('html')[0].className = 'calibrated'
+    }
+
     calibrateRight.innerHTML = calibrated.right ? 'ok' : 'right';
     calibrateLeft.innerHTML = calibrated.left ? 'ok' : 'left';
     calibrateDown.innerHTML = calibrated.down ? 'ok' : 'down';
@@ -298,6 +302,10 @@
     points.attr('fill', 'rgba(0,0,0,0.1)');
 
     calibrateReset.style.display = 'none'
+
+    document.getElementsByTagName('html')[0].className = '';
+
+    localStorage.removeItem('calibration')
 
     render();
   }
