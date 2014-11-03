@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'ps';
-	src:url('fonts/ps.eot?-dedu0j');
-	src:url('fonts/ps.eot?#iefix-dedu0j') format('embedded-opentype'),
-		url('fonts/ps.woff?-dedu0j') format('woff'),
-		url('fonts/ps.ttf?-dedu0j') format('truetype'),
-		url('fonts/ps.svg?-dedu0j#ps') format('svg');
+	src:url('ps.eot?-dedu0j');
+	src:url('ps.eot?#iefix-dedu0j') format('embedded-opentype'),
+		url('ps.woff?-dedu0j') format('woff'),
+		url('ps.ttf?-dedu0j') format('truetype'),
+		url('ps.svg?-dedu0j#ps') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
