@@ -2,37 +2,39 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hello</title>
+  <title>Here</title>
   <meta name="viewport" content="width=device-width">
+  <!-- inject:css -->
+  <!-- DON'T FORGET TO UPDATE GULP -->
+  
   <link rel="stylesheet" href="icons/style.css"></head>
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <style type="text/css">
-    svg{
-      display:block;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- endinject -->
 </head>
 <body>
-  <h1>Hello</h1>
+  <h1>
+    <a href="#" class="iscon-" id="calibrate-reset">&times; reset</a>
+  </h1>
 
-  <button onclick="alert(((+new Date()) - offset)%modulus)">Timestamp</button>
+  <!-- <h1>here.ffconf.org </h1> -->
 
-  <div class="content">
+  <!--button onclick="alert(((+new Date()) - offset)%modulus)">Timestamp</button-->
+
+  <!--div class="content">
     <p>Some intro stuff here</p>
+  </div-->
 
-  </div>
+  <!--h2>Calibration </h2-->
 
-  <h2>Calibration <a href="#" class="iscon-" id="calibrate-reset">&times; reset</a></h2>
+  <div id="calibration" class="icon-"><!--
+    --><a href="#" id="calibrate-right">right</a><!--
+    --><a href="#" id="calibrate-left">left</a><!--
+    --><a href="#" id="calibrate-down">down</a><!--
+    --><div id="calibration-status"></div><!--
+  --></div>
 
-  <div id="calibration" class="icon-">
-    <a href="#" id="calibrate-right">right</a>
-    <a href="#" id="calibrate-left">left</a>
-    <a href="#" id="calibrate-down">down</a>
-
-    <div id="calibration-status"></div>
-  </div>
-
-  <div id="demos">
+  <div id="demos" class="post-calibration">
 
     <div class="demo">
       <h3 class="demo-title">Demo #1 </h3>
@@ -64,7 +66,7 @@
       <a href="http://twitter.com/benjaminbenben">
         <span class="icon-">twitter</span> benjaminbenben
       </a>
-      <a href="https://github.com/benfoxall/position-sync">
+      <a href="https://github.com/benfoxall/position-sync" class="post-calibration">
         <span class="icon-">github</span> benfoxall/position-sync
       </a>
     </p>
@@ -81,8 +83,12 @@
   </div>
 
 
-  <div class="icon-">waiting warning ok close start stop right down left twitter github&nbsp;
-    </div>
+  <!--div class="icon-">waiting warning ok close start stop right down left twitter github</div-->
+
+
+  <!-- inject:js -->
+  <!-- DON'T FORGET TO UPDATE GULP -->
+
   <script src="bower_components/d3/d3.js"></script>
   <script src="bower_components/bean/bean.js"></script>
   <script src="bower_components/tweenjs/src/Tween.js"></script>
@@ -90,5 +96,7 @@
   <script src="ps.js"></script>
   <script src="client.js"></script>
 
+
+  <!-- endinject -->
 </body>
 </html>
