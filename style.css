@@ -1,3 +1,14 @@
+.post-calibration{
+  display: none;
+}
+.calibrated .post-calibration{
+  display:block;
+}
+
+svg{
+      display:block;
+    }
+
 body{
   font-family: sans-serif;
   margin:0;
@@ -78,8 +89,9 @@ rect{
   text-decoration: none;
 }
 #calibrate-left, #calibrate-right, #calibrate-down{
-  margin:.3em;
+  margin: 0;
   display: inline-block;
+  padding: 0.2em;
 }
 #calibrate-left{
   color:#ff7f0e;
@@ -101,6 +113,7 @@ rect{
   font-size: .65em;
   font-weight: normal;
   display: none;
+  float:right;
 }
 
 .demo{
@@ -131,10 +144,20 @@ footer p{
   -webkit-font-smoothing: antialiased;
   background: #000;
   padding:.5em 1em;
+  margin:0;
 }
 footer a{
   color:#fff;
   display: block;
+}
+
+footer{
+  position: absolute;
+  bottom:0;
+}
+
+.calibrated footer{
+  position: static;
 }
 
 #demo{
@@ -171,3 +194,4 @@ footer a{
   background-image: url(demo-bg.jpg);
   background-size: 1500%;
 }
+
