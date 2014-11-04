@@ -35,8 +35,8 @@ a:hover{
 }
 svg{
   /*outline: 1px solid #ccc;*/
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
+  /* background: rgba(255, 255, 255, 0.9); */
+  /* border-radius: 10px; */
 }
 line{
 /*  stroke: red;
@@ -82,8 +82,8 @@ rect{
 
 
 #calibration{
-  margin:1em;
-  font-size: 4em;
+  margin: 0;
+  font-size: 70px;
   text-align: center;
   color:#000;
 }
@@ -105,17 +105,34 @@ rect{
   color:#f08;
 }
 
+@media (min-width: 300px) {
+  #calibration{
+    font-size:100px;
+  }
+}
+
+
+@media (min-width: 500px) {
+  #calibration{
+    font-size:200px;
+  }
+}
+
 #calibration-status{
   /*border: 1px solid;*/
   height: 150px;
   margin: .5em auto auto auto;
   width: 150px;
+  margin-bottom: 50px;
 }
 #calibrate-reset{
-  font-size: .65em;
+  font-size: 21px;
   font-weight: normal;
   display: none;
   float:right;
+  position: absolute;
+  right: 5px;
+  top: 5px;
 }
 
 .demo{
@@ -154,7 +171,7 @@ footer a{
 }
 
 footer{
-  position: absolute;
+  position: fixed;
   bottom:0;
 }
 

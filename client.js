@@ -64,7 +64,8 @@
   bean.on(calibrateDown,  'click', handlers.prevent)
 
   // resetting
-  bean.on(calibrateReset, 'click', function(){
+  bean.on(calibrateReset, 'click', function(e){
+    e.preventDefault();
     if(window.confirm("Discard calibration data?")){
       reset_calibration()
     }
@@ -170,15 +171,15 @@
       var d = ps.distance(last, penultimate, modulus);
 
       if(Math.abs(last - penultimate) < modulus/2){
-        console.log("found points, but too close together (pre modulation)")
+        console.log("pre-modulation skip") //found points, but too close together (pre modulation)
         return null;
       }
 
-      if(Math.abs(d) < modulus*0.1){
+      if(Math.abs(d) < modulus*0.1){//within a second?
         var avg = ps.average([last, penultimate], modulus)
         return avg;
       } else {
-        console.log("found points, but not close enough")
+        console.log("post-modulation skip") // found points, but not close enough
       }
     }
 
