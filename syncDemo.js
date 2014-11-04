@@ -8,7 +8,7 @@
 
     var play = window.play = (function(sounds){
 
-        var buffers = {}
+        var buffers = {}, firstLoaded;
 
         for(sound in sounds){
             if(sounds.hasOwnProperty(sound))
@@ -17,6 +17,21 @@
         }
 
         return function play(name){
+            if(!name && firstLoaded){
+
+              var buffer = buffers[firstLoaded];
+              var source = context.createBufferSource();
+              var gainNode = context.createGain();
+              gainNode.gain.value = 0.05;
+              source.buffer = buffer;
+              source.connect(gainNode);
+              gainNode.connect(context.destination);
+
+              console.log("playing blank", firstLoaded)
+
+              return;
+            }
+
             var buffer = buffers[name];
             if(buffer){
                   var source = context.createBufferSource();
@@ -35,6 +50,7 @@
           xhr.onload = function() {
             context.decodeAudioData(xhr.response, function(buffer) {
               buffers[name] = buffer;
+              if(!firstLoaded) firstLoaded = name;
             }, function(e){
                 console.log("an error occured requesting ", url, e)
             });
@@ -144,7 +160,7 @@
     //
     // initial (out of sync) flashing
     //
-    false && this.queue(
+    this.queue(
       new TWEEN.Tween({t:0})
         .onStart(notify('started'))
 
@@ -215,76 +231,79 @@
 
     // console.log(_x, y, a, a2)
 
-    // hsv in
-    this.queue(
-      new TWEEN.Tween({l:0})
-        .to({l:.5}, 3000)
-        .onStart(notify('blank'))
-        .onUpdate(master?noop:function() {
+    if(true){
 
-          fill(ctx,hsl(a,d,this.l));
-        })
-    )
+      // hsv in
+      this.queue(
+        new TWEEN.Tween({l:0})
+          .to({l:.5}, 3000)
+          .onStart(notify('blank'))
+          .onUpdate(master?noop:function() {
 
-    // hsv rotate
-    this.queue(
-      new TWEEN.Tween({a:0})
-        .to({a:Math.PI*4}, 20000)
-        .easing(TWEEN.Easing.Cubic.InOut)
-        .onStart(notify('blank'))
-        .onUpdate(master?noop:function() {
+            fill(ctx,hsl(a,d,this.l));
+          })
+      )
 
-          fill(ctx,hsl(a+this.a,d,.5));
-        })
-        // .repeat(1)
-        // .yoyo(true)
-    )
+      // hsv rotate
+      this.queue(
+        new TWEEN.Tween({a:0})
+          .to({a:Math.PI*4}, 20000)
+          .easing(TWEEN.Easing.Cubic.InOut)
+          .onStart(notify('blank'))
+          .onUpdate(master?noop:function() {
 
-    // hsv out
-    this.queue(
-      new TWEEN.Tween({l:0.5})
-        .to({l:0}, 2000)
-        .onStart(notify('blank'))
-        .onUpdate(master?noop:function() {
+            fill(ctx,hsl(a+this.a,d,.5));
+          })
+          // .repeat(1)
+          // .yoyo(true)
+      )
 
-          fill(ctx,hsl(a,d,this.l));
-        })
-    )
+      // hsv out
+      this.queue(
+        new TWEEN.Tween({l:0.5})
+          .to({l:0}, 2000)
+          .onStart(notify('blank'))
+          .onUpdate(master?noop:function() {
 
-
-    // 'on' rotate
-    this.queue(
-      new TWEEN.Tween({a:-1})
-        .to({a:(Math.PI*2)+1}, 10000)
-        .easing(TWEEN.Easing.Linear.None)
-        .onStart(notify('blank'))
-        .onUpdate(master?noop:function() {
-          fill(ctx,grey(a2 > this.a ? 0 : 1));
-        })
-    )
+            fill(ctx,hsl(a,d,this.l));
+          })
+      )
 
 
-    // 'off' rotate
-    this.queue(
-      new TWEEN.Tween({a:-1})
-        .to({a:(Math.PI*2)+1}, 10000)
-        .easing(TWEEN.Easing.Linear.None)
-        .onStart(notify('blank'))
-        .onUpdate(master?noop:function() {
-          fill(ctx,grey(a2 > this.a ? 1 : 0));
-        })
-    )
+      // 'on' rotate
+      this.queue(
+        new TWEEN.Tween({a:-1})
+          .to({a:(Math.PI*2)+1}, 10000)
+          .easing(TWEEN.Easing.Linear.None)
+          .onStart(notify('blank'))
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(a2 > this.a ? 0 : 1));
+          })
+      )
 
-    // blank
-    this.queue(
-      new TWEEN.Tween({t:0})
-        .to({t:1}, 5000)
-        .onStart(notify('blank'))
-        .onUpdate(master?noop:function() {
-          fill(ctx,'#000');
-        })
-    )
 
+      // 'off' rotate
+      this.queue(
+        new TWEEN.Tween({a:-1})
+          .to({a:(Math.PI*2)+1}, 10000)
+          .easing(TWEEN.Easing.Linear.None)
+          .onStart(notify('blank'))
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(a2 > this.a ? 1 : 0));
+          })
+      )
+
+      // blank
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 5000)
+          .onStart(notify('blank'))
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#000');
+          })
+      )
+
+    }
 
     // master audio
     if(true){

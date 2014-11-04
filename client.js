@@ -391,6 +391,12 @@
     bodyElement.style.overflow = 'hidden';
     demoTitle.innerHTML = 'Demo #3';
 
+
+    // play a blank sound for iOS to start audio
+    if(window.play){
+      window.play();
+    }
+
     // create a canvas
     var canvas = document.createElement('canvas');
 
