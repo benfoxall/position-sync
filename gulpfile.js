@@ -28,7 +28,7 @@ var paths = {
   ],
   css: ['style.css','icons/style.css'],
 
-  assets: ['icons/ps*', 'demo-bg.jpg']
+  assets: ['icons/ps*', 'demo-bg.jpg', '*.mp3']
 }
 
 

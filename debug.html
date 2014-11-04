@@ -15,40 +15,83 @@
 
         }
     </style>
+
+    <script type="text/javascript">
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        window.context = parent.context || new AudioContext();
+
+
+    </script>
 </head>
 <body onload="setTimeout(setup,100)">
 
 <div class="debug">
     <iframe src="client.html#calibration-status" data-debug=".1 .1"></iframe>
-    <iframe src="client.html#calibration-status" data-debug=".5 .1"></iframe>
-    <iframe src="client.html#calibration-status" data-debug=".9 .1"></iframe>
+    <iframe src="client.html#calibration-status" data-debug=".5 .15"></iframe>
+    <iframe src="client.html#calibration-status" data-debug=".9 .2"></iframe>
 </div>
 
 <div class="debug">
-    <iframe src="client.html#calibration-status" data-debug=".1 .5"></iframe>
+    <iframe src="client.html#calibration-status" data-debug=".1 .45"></iframe>
     <iframe src="client.html#calibration-status" data-debug=".5 .5"></iframe>
-    <iframe src="client.html#calibration-status" data-debug=".9 .5"></iframe>
+    <iframe src="client.html#calibration-status" data-debug=".9 .55"></iframe>
 </div>
 
 <div class="debug">
-    <iframe src="client.html#calibration-status" data-debug=".1 .9"></iframe>
+    <iframe src="client.html#calibration-status" data-debug=".1 .85"></iframe>
     <iframe src="client.html#calibration-status" data-debug=".5 .9"></iframe>
-    <iframe src="client.html#calibration-status" data-debug=".9 .9"></iframe>
+    <iframe src="client.html#calibration-status" data-debug=".9 .95"></iframe>
 </div>
 
-<button onclick="demo(1)">Demo #1</button>
-<button onclick="demo(2)">Demo #2</button>
-<button onclick="demo(3)">Demo #3</button>
-<button onclick="demo(3, true)">Demo #3 (stagger)</button>
+<p>
+    Clients:
+    <button onclick="demo(1)">Demo #1</button>
+    <button onclick="demo(2)">Demo #2</button>
+    <button onclick="demo(3)">Demo #3</button>
+    <button onclick="demo(3, true)">Demo #3 (stagger)</button>
+</p>
 
 <!-- <iframe src="master.html" width="100%" style="margin-top:1em;"></iframe> -->
 
+<p>
+    Master: 
+    <button onclick="master_demo(3)">demo3</button>
+</p>
 
-<div id="timer"></div>
+<div id="master">
+    <div id="timer"></div>
+    <canvas width="960" height="540"></canvas>
+</div>
+
+<style type="text/css">
+    #master{
+        transform: scale(0.75);
+        transform-origin: 0 0;
+        border: 1px solid #aaa;
+        width: 960px;
+        height:540px;
+
+        background:url(demo-bg.jpg);
+        background-size:cover;
+    }
+    #master #timer{
+        position: absolute;
+        left:405px;
+        top:195px;
+    }
+</style>
 
 
 <script src="bower_components/d3/d3.js"></script>
+<script src="bower_components/tweenjs/src/Tween.js"></script>
+<script src="syncDemo.js"></script>
+
 <script type="text/javascript">
+
+  var width   = 960,
+      height  = 540,
+      modulus = 10000;
+
 
 function setup(){
     [].forEach.call(document.querySelectorAll('.debug iframe'), function(frame){
@@ -71,66 +114,238 @@ function demo(i, staggered){
     })
 }
 
-var timer_size = 150;
-var timer = d3.select('#timer')
-    .append('svg')
-    .attr('width', timer_size)
-    .attr('height', timer_size)
 
-var g = timer.append('g')
-        .attr('transform', 'translate(' + timer_size/2 + ', ' + timer_size/2 + ') scale('+timer_size/2.5+')');
 
-g.append('circle')
-    .attr('r',1)
-    .attr('stroke-width',0.02)
-    .attr('fill', 'none')
-    .attr('stroke', '#aaa')
 
-var now = g.append('circle')
-    .attr('r',.1)
-    .attr('fill', '#08f')
-    .attr('cx',-1)
 
-var x = function(i){
-    return Math.sin(i*(Math.PI*2/10000))
+
+
+
+
+
+
+var t = timer('#timer');
+
+// setTimeout(t.start, 1000)
+
+
+
+
+function master_demo(i){
+    // cycle start (at the right of the circle)
+    var cycleStart = (modulus - ((+ new Date) % modulus)) + (modulus/4)
+
+    t.style('#ccc', 0.7);
+
+    setTimeout(function(){
+        t.style('green', 2);
+    }, cycleStart + (modulus*0.25))
+
+    setTimeout(function(){
+        t.style('#ccc', 0.7);
+        t.stop();
+    }, cycleStart + (modulus*0.75))
+
+    // start the actual demo
+
+    setTimeout(function(){
+        var canvas = document.querySelector('#master canvas')
+        var demo = new SyncDemo(canvas, modulus/2, 0,0, true)
+        demo.start()
+    }, cycleStart + (modulus*0.5))
+
+    
+
+
 }
-var y = function(i){
-    return -Math.cos(i*(Math.PI*2/10000))
-}
 
-function render_timer(){
-    requestAnimationFrame(render_timer);
 
-    now
-        .datum(+new Date)
-        .attr('cx', x)
-        .attr('cy', y)
-}
 
-render_timer();
+/** Helpers */
 
-function add(colour){
-    var d = + new Date;
+
+function timer(selector){
+
+    var t = function(){}, stop;
+
+
+    function x(i){
+        return Math.sin(i*(Math.PI*2/10000))
+    }
+    function y(i){
+        return -Math.cos(i*(Math.PI*2/10000))
+    }
+
+    var fill = '#08f';
+    var timer_size = 150,
+        r = timer_size/2;
+    var svg = d3.select(selector)
+        .append('svg')
+        .attr('width', timer_size)
+        .attr('height', timer_size)
+        .style('background', 'rgba(255, 255, 255, 0)')
+        .style('border-radius', '10px')
+
+    var g = svg.append('g')
+            .attr('transform', 'translate(' + r + ', ' + r + ') scale(0)');
+
     g.append('circle')
-        .attr('cx', x(d))
-        .attr('cy', y(d))
+        .attr('r',1)
+        .attr('stroke-width',0.02)
+        .attr('fill', 'none')
+        .attr('stroke', '#aaa')
+
+    var now = g.append('circle')
         .attr('r',.1)
-        .attr('fill', '#f08')    
+        .attr('cx',-1)
+        .attr('fill', fill)
+
+
+    function render_timer(){
+        if(stop) return;
+        requestAnimationFrame(render_timer);
+
+        now
+            .datum(+new Date)
+            .attr('cx', x)
+            .attr('cy', y)
+            // .attr('fill', fill)
+    }
+
+    
+
+    var started;
+    t.start = function(){
+        if(started) return; started = true;
+
+        g
+            .transition()
+            .duration(1000)
+            .attr('transform', 'translate(' + r + ', ' + r + ') scale('+timer_size/2.5+')');
+
+        svg
+            .transition()
+            .duration(1000)
+            .style('background', 'rgba(255, 255, 255, 0.9)')
+
+        render_timer();
+    }
+
+    t.add = function(colour){
+        var d = + new Date;
+        g.append('circle')
+            .attr('cx', x(d))
+            .attr('cy', y(d))
+            .attr('r',.1)
+            .attr('fill', colour || '#f08');
+
+        return t;
+    }
+
+
+    t.stop = function(){
+        stop = true;
+        d3.select('g')
+            .transition()
+            .duration(2500)
+            .attr('transform', 'translate(' + r + ', ' + r + ') scale(0.001) rotate(90)')
+            .remove();
+
+        svg
+            .transition()
+            .duration(3500)
+            .style('background', 'rgba(255, 255, 255, 0)')
+            .remove();
+
+        return t;
+    }
+
+    t.style = function(color, scale){
+        now
+            .transition()
+            .attr('fill', color || fill)
+            .attr('r', (scale||1) * 0.1)
+        return t;
+    }
+
+
+    return t;
 }
 
 
-  timeWorker = new Worker("worker.js");
-  timeWorker.onmessage = function(oEvent){
-    console.log(oEvent.data - (+new Date));
-  }
+
+
+// var dogBarkingBuffer = null;
+
+
+// function loadDogSound(url) {
+//   var request = new XMLHttpRequest();
+//   request.open('GET', url, true);
+//   request.responseType = 'arraybuffer';
+
+//   // Decode asynchronously
+//   request.onload = function() {
+//     context.decodeAudioData(request.response, function(buffer) {
+//       dogBarkingBuffer = buffer;
+//     }, onError);
+//   }
+//   request.send();
+// }
+
+// loadDogSound('assets/bubbles.mp3');
+
+
+// function onError(e){
+//     console.log("AN ERROR". e)
+// }
+
+
+// function playSound(buffer) {
+//   var source = context.createBufferSource(); // creates a sound source
+//   source.buffer = buffer;                    // tell the source which sound to play
+//   source.connect(context.destination);       // connect the source to the context's destination (the speakers)
+//   source.start(0);                           // play the source now
+//                                              // note: on older systems, may have to use deprecated noteOn(time);
+// }
+
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },0)
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },1000)
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },2000)
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },3000)
 
 
 
-// t = new Timer('#timer');
 
-// timer('#timer')
-    // .start()
-    // .add()
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },0)
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },500)
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },1000)
+// setTimeout(function(){
+//     playSound(dogBarkingBuffer)
+// },1500)
+
+
+function play_repeat(n, space){
+    for(var i = 0; i < n; i++){
+        setTimeout(function(){
+            play('bubbles')
+        },i*space)
+    }
+}
+
 
 
 </script>

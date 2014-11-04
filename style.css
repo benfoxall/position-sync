@@ -35,6 +35,8 @@ a:hover{
 }
 svg{
   /*outline: 1px solid #ccc;*/
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
 }
 line{
 /*  stroke: red;

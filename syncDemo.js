@@ -1,5 +1,61 @@
 (function(){
 
+  var play = noop;
+
+  try {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    window.context = parent.context || new AudioContext();
+
+    var play = window.play = (function(sounds){
+
+        var buffers = {}
+
+        for(sound in sounds){
+            if(sounds.hasOwnProperty(sound))
+                request(sound, sounds[sound]) // load it
+            
+        }
+
+        return function play(name){
+            var buffer = buffers[name];
+            if(buffer){
+                  var source = context.createBufferSource();
+                  source.buffer = buffer;
+                  source.connect(context.destination);
+                  source.start(0);
+            }
+        }
+
+        function request(name,url){
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true);
+          xhr.responseType = 'arraybuffer';
+
+          // Decode asynchronously
+          xhr.onload = function() {
+            context.decodeAudioData(xhr.response, function(buffer) {
+              buffers[name] = buffer;
+            }, function(e){
+                console.log("an error occured requesting ", url, e)
+            });
+          }
+          xhr.send();
+        }
+    })({
+        'bubbles': '_bubbles.mp3',
+        'spiral': '_dotted-spiral.mp3',
+        'clap': '_clap.mp3',
+        'ting': '_ting.mp3',
+    })
+
+  } catch (e) {
+    console.log("couldn't load audio", e)
+  }
+
+
+
+
+
   // This generates a stepper that I can only really describe when
   // I'm at a whiteboard and have three different coloured pens
   function generateStepper(steps, initial){
@@ -66,7 +122,9 @@
 
 
 
-	function SyncDemo(canvas, offset, x, y){
+	function SyncDemo(canvas, offset, x, y, master){
+
+
     var ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
@@ -91,7 +149,7 @@
         .onStart(notify('started'))
 
         .to({t:1}, 15000)
-        .onUpdate(function() {
+        .onUpdate(master?noop: function() {
           fill(ctx,grey(stepper(this.t)));
         })
         .repeat(1) // twice
@@ -101,7 +159,7 @@
     // catchup cycles
     //
     var cycles = 1,
-        cycleDuration = 15000 - (offset/cycles);
+        cycleDuration = 10000 - (offset/cycles);
 
     console.log("cycleOffset", offset/cycles)
     console.log("cycleDuration", cycleDuration)
@@ -112,7 +170,7 @@
 
         .to({t:1}, cycleDuration)
         .onStart(notify('started syncing'))
-        .onUpdate(function() {
+        .onUpdate(master?noop:function() {
           fill(ctx,grey(stepper(this.t)))
         })
         .repeat(cycles-1)
@@ -124,11 +182,11 @@
 
         .to({t:1}, 15000)
         .onStart(notify('started in-sync flashing'))
-        .onUpdate(function() {
+        .onUpdate(master?noop:function() {
           fill(ctx,grey(stepper(this.t)));
 
         })
-        .repeat(1) // twice
+        // .repeat(1) // twice
     )
 
     // blank
@@ -136,7 +194,7 @@
       new TWEEN.Tween({t:0})
         .to({t:1}, 10000)
         .onStart(notify('blank'))
-        .onUpdate(function() {
+        .onUpdate(master?noop:function() {
           fill(ctx,'#000');
         })
     )
@@ -146,17 +204,23 @@
     var _x    = (x*2)-1,
         _y    = (y*2)-1,
         a    = Math.atan2(_x, _y),
+        a2   = a,
         d    = Math.sqrt((_x*_x)+(_y*_y));
 
 
-    console.log(a,d)
+    if(a2 < 0){
+      a2   = (a + Math.PI*2);// % Math.PI*2 // 0 -> Math.PI*2
+    }
+
+
+    // console.log(_x, y, a, a2)
 
     // hsv in
     this.queue(
       new TWEEN.Tween({l:0})
-        .to({l:.5}, 5000)
+        .to({l:.5}, 3000)
         .onStart(notify('blank'))
-        .onUpdate(function() {
+        .onUpdate(master?noop:function() {
 
           fill(ctx,hsl(a,d,this.l));
         })
@@ -168,13 +232,290 @@
         .to({a:Math.PI*4}, 20000)
         .easing(TWEEN.Easing.Cubic.InOut)
         .onStart(notify('blank'))
-        .onUpdate(function() {
+        .onUpdate(master?noop:function() {
 
           fill(ctx,hsl(a+this.a,d,.5));
         })
-        .repeat(1)
-        .yoyo(true)
+        // .repeat(1)
+        // .yoyo(true)
     )
+
+    // hsv out
+    this.queue(
+      new TWEEN.Tween({l:0.5})
+        .to({l:0}, 2000)
+        .onStart(notify('blank'))
+        .onUpdate(master?noop:function() {
+
+          fill(ctx,hsl(a,d,this.l));
+        })
+    )
+
+
+    // 'on' rotate
+    this.queue(
+      new TWEEN.Tween({a:-1})
+        .to({a:(Math.PI*2)+1}, 10000)
+        .easing(TWEEN.Easing.Linear.None)
+        .onStart(notify('blank'))
+        .onUpdate(master?noop:function() {
+          fill(ctx,grey(a2 > this.a ? 0 : 1));
+        })
+    )
+
+
+    // 'off' rotate
+    this.queue(
+      new TWEEN.Tween({a:-1})
+        .to({a:(Math.PI*2)+1}, 10000)
+        .easing(TWEEN.Easing.Linear.None)
+        .onStart(notify('blank'))
+        .onUpdate(master?noop:function() {
+          fill(ctx,grey(a2 > this.a ? 1 : 0));
+        })
+    )
+
+    // blank
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 5000)
+        .onStart(notify('blank'))
+        .onUpdate(master?noop:function() {
+          fill(ctx,'#000');
+        })
+    )
+
+
+    // master audio
+    if(true){
+
+      // on with beat from master
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 500)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t));
+          })
+      )
+
+      // blank (white)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#fff');
+          })
+      )
+
+      // off with a beat from the master
+      this.queue(
+        new TWEEN.Tween({t:1})
+          .to({t:0}, 500)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t));
+          })
+      )
+
+
+      // blank (black)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 5000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#000');
+          })
+      )
+
+
+      // up with beat from master
+      this.queue(
+        new TWEEN.Tween({t:1})
+          .to({t:0}, 1000)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t > y ? 0 : 1));
+          })
+      )
+
+      // blank (white)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#fff');
+          })
+      )
+
+
+      // left with beat from master
+      this.queue(
+        new TWEEN.Tween({t:1})
+          .to({t:0}, 1000)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t > x ? 1 : 0));
+          })
+      )
+
+
+      // blank (black)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#000');
+          })
+      )
+
+      // right with beat from master
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t > x ? 1 : 0));
+          })
+      )
+
+      // blank (white)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#fff');
+          })
+      )
+
+
+      // right -> black with beat from master
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t > x ? 0 : 1));
+          })
+      )
+
+      // blank (black)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 1000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#000');
+          })
+      )
+
+      // on with beat from master
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 100)
+          .onStart(master ? function(){play('bubbles')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t));
+          })
+      )
+
+      // blank (white)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 2000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#fff');
+          })
+      )
+
+      // down with fizz from master
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 2000)
+          .onStart(master ? function(){play('spiral')} : noop)
+          .onUpdate(master?noop:function() {
+            fill(ctx,grey(this.t < y ? 1 : 0));
+          })
+      )
+
+      // blank (black)
+      this.queue(
+        new TWEEN.Tween({t:0})
+          .to({t:1}, 10000)
+          .onUpdate(master?noop:function() {
+            fill(ctx,'#000');
+          })
+      )
+
+
+    } // master audio
+
+
+
+    // sound moving down
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 3000)
+        .onStart(master ? noop : function(){setTimeout(function(){play('bubbles')}, y*3000)})
+        .onUpdate(noop)
+    )
+
+
+
+    // blank (black)
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 4000)
+        .onUpdate(master?noop:function() {
+          fill(ctx,'#000');
+        })
+    )
+
+
+    // sound moving around
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 10000)
+        .onStart(master ? noop : function(){setTimeout(function(){
+          play('bubbles');
+          // fill(ctx,'#fff');
+        }, (a2/(Math.PI*2))*10000)})
+        .onUpdate(noop)
+    )
+
+
+    // blank (black)
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 4000)
+        .onUpdate(master?noop:function() {
+          fill(ctx,'#000');
+        })
+    )
+
+
+    // sound moving around with light
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 10000)
+        .onStart(master ? noop : function(){setTimeout(function(){
+          play('bubbles');
+          fill(ctx,'#fff');
+        }, (a2/(Math.PI*2))*10000)})
+        .onUpdate(noop)
+    )
+
+
+    // fizz (at same time) back to the bottom
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 2000)
+        .onStart(master ? noop: function(){play('spiral')})
+        .onUpdate(master?noop:function() {
+          fill(ctx,grey(this.t < y ? 1 : 0));
+        })
+    )
+
+
 
 	}
 
@@ -218,6 +559,8 @@
 
 
 	window.SyncDemo = SyncDemo;
+
+  function noop(){}
 
 })();
 
