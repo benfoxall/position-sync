@@ -1,0 +1,6 @@
+1. screenshare (user focus)
+2. screenshare (room focus)
+3. timing
+4. movement
+5. capability sharing
+6. capability combining

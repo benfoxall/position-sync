@@ -195,29 +195,30 @@
 
     this._screenshare();
 
-    this.blank(20000)
+    // this.blank(20000)
 
     this._positionColours();
 
-    this.blank(10000)
+    // this.blank(10000)
 
     this._syncronisation();
     // this._syncronisation_short();
 
 
-    this.blank(10000)
+    // this.blank(10000)
 
+    // this is now all movement is in here
     this._movingColours();
 
-    this.blank(15000)
+    // this.blank(15000)
+    // this._movement();
 
-    this._movement();
+    // this.blank(10000)
 
-    this.blank(10000)
 
     this._capabilitySharing();
 
-    this.blank(10000)
+    // this.blank(10000)
 
     this._capabilityCombining();
 
@@ -613,7 +614,8 @@
   SyncDemo.prototype._screenshare = function(){
     var self = this;
 
-    this.footerHTML('screenshare');
+    this.footerHTML('1. screenshare (user focus)');
+
 
     this.blank(10000)
 
@@ -632,7 +634,7 @@
       })
     )
 
-    this.blank(30000)
+    this.blank(10000)
 
     // fade in the image on the master
     this.queue(
@@ -651,7 +653,7 @@
     )
 
 
-    this.blank(30000)
+    this.blank(20000)
 
     // fade out both
     this.queue(
@@ -666,7 +668,7 @@
       })
     )
 
-    this.footerHTML('');
+    // this.footerHTML('');
   };
 
 
@@ -679,7 +681,7 @@
 
     // red to green
 
-    this.footerHTML("using the environment")
+    this.footerHTML("2. screenshare (room focus)")
 
     this.blank(10000)
 
@@ -717,7 +719,7 @@
 
     this.blank(10000)
 
-    this.footerHTML("")
+    // this.footerHTML("")
 
   };
 
@@ -728,10 +730,11 @@
   */
   SyncDemo.prototype._syncronisation = function(){
     var ctx = this.ctx,
+        canvas = this.canvas,
         cycles = 1,
         cycleDuration = 20000 - (this.offset/cycles);
 
-    this.footerHTML('syncronisation <small>Warning: flashing phones</small>');
+    this.footerHTML('3. timing <small>Warning: flashing phones</small>');
 
     this.blank(13000)
 
@@ -747,7 +750,7 @@
     //out of sync colours
     this.queue(
       new TWEEN.Tween({t:0,h:0})
-        .to({t:1,h:360}, 10000)
+        .to({t:1,h:360}, 6000)
         .onUpdate(this.master?noop: function() {
           fill(ctx,hsl_basic(this.h,1,0.3*stepper10(this.t)));
         })
@@ -765,9 +768,68 @@
         .repeat(cycles-1)
     )
 
-    this.footerHTML('syncronisation!');
+    this.blank(5000)
 
-    this.blank(10000)
+    // blue - 208° 100% 50%
+    // pink - 328° 100% 50%
+    // white - 0° 0% 100%
+
+    // joined with the screen
+
+    // blue
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 5000)
+        .onStart(this.master?function(){
+          ctx.fillStyle = hsl_basic(208,1,0.5)
+          ctx.fillRect(0,0,canvas.width,20)
+        }:function(){
+          fill(ctx,hsl_basic(208,1,0.5))
+        })
+    )
+
+    // pink
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 5000)
+        .onStart(this.master?function(){
+          ctx.fillStyle = hsl_basic(328,1,0.5)
+          ctx.fillRect(0,0,canvas.width,20)
+        }:function(){
+          fill(ctx,hsl_basic(328,1,0.5))
+        })
+    )
+
+    // white
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 5000)
+        .onStart(this.master?function(){
+          ctx.fillStyle = '#fff'
+          ctx.fillRect(0,0,canvas.width,20)
+        }:function(){
+          fill(ctx,'#fff')
+        })
+    )
+
+    // black
+    this.queue(
+      new TWEEN.Tween({t:0})
+        .to({t:1}, 5000)
+        .onStart(this.master?function(){
+          ctx.fillStyle = '#000'
+          ctx.fillRect(0,0,canvas.width,20)
+        }:function(){
+          fill(ctx,'#000')
+        })
+        .onComplete(!this.master?noop:function(){
+          ctx.clearRect(0,0,canvas.width,20)
+        })
+    )
+
+    this.footerHTML('3. timing <small>If your device is ~5/10s out, please turn off the demo <small>(sorry)</small></small>');
+
+    this.blank(4000)
 
     // in sync
     this.queue(
@@ -781,13 +843,29 @@
     // colour flashing
     this.queue(
       new TWEEN.Tween({t:0,h:0})
-        .to({t:1,h:360}, 20000)
+        .to({t:1,h:360}, 6000)
         .onUpdate(this.master?noop: function() {
           fill(ctx,hsl_basic(this.h,1,0.3*stepper10(this.t)));
         })
     )
 
-    this.footerHTML('');
+    this.queue(
+      new TWEEN.Tween({t:0,h:0})
+        .to({t:1,h:360}, 6000)
+        .onUpdate(this.master?noop: function() {
+          fill(ctx,hsl_basic(this.h,1,0.3*stepper10(this.t)));
+        })
+    )
+
+    this.queue(
+      new TWEEN.Tween({t:0,h:0})
+        .to({t:1,h:360}, 6000)
+        .onUpdate(this.master?noop: function() {
+          fill(ctx,hsl_basic(this.h,1,0.3*stepper10(this.t)));
+        })
+    )
+
+    // this.footerHTML('');
 
   };
 
@@ -822,17 +900,25 @@
     Moving rainbow colours
   */
   SyncDemo.prototype._movingColours = function(){
+    var ctx = this.ctx,
+        x = this.x,
+        y = this.y,
+        a    = Math.atan2(x-.5, y-.5);
+    if(a < 0){
+      a   = (a + Math.PI*2);// 0 -> Math.PI*2
+    }
 
-    var ctx = this.ctx;
 
-    this.footerHTML("position &amp; time &rarr; colour")
+    // this.footerHTML('4/X getting in time <small>If your device is ~5/10s out, please turn off the demo</small>');
+
+    this.footerHTML("4. movement")
 
     this.blank(10000)
 
     // hsl across (static)
     this.queue(
       new TWEEN.Tween({h:0,s:1,l:0})
-        .to({h:this.x * 120,s:1,l:0.5}, 5000)
+        .to({h:this.x * 120,s:1,l:0.5}, 4000)
         .onUpdate(this.master?noop:function() {
           fill(ctx,hsl_basic(this.h,this.s,this.l));
         })
@@ -849,6 +935,84 @@
         .yoyo(true)
     )
 
+    this.queue(
+      new TWEEN.Tween({h:this.x * 120,s:1,l:0.5})
+        .to({h:0,s:0,l:0}, 5000)
+        .onUpdate(this.master?noop:function() {
+          fill(ctx,hsl_basic(this.h,this.s,this.l));
+        })
+    )
+
+
+    // black/white
+
+    this.blank(3000)
+
+    // 'on' up (and back)
+    this.queue(
+      new TWEEN.Tween({t:1})
+        .to({t:0}, 2500)
+        // .onStart(master ? function(){play('spiral')} : noop)
+        .onUpdate(this.master?noop:function() {
+          fill(ctx,grey(this.t < y ? 1 : 0));
+        })
+        .repeat(1)
+        .yoyo(true)
+    )
+
+    // 'on' left (and back)
+    this.queue(
+      new TWEEN.Tween({t:1})
+        .to({t:0}, 2500)
+        // .onStart(master ? function(){play('spiral')} : noop)
+        .onUpdate(this.master?noop:function() {
+          fill(ctx,grey(this.t < x ? 1 : 0));
+        })
+        .repeat(1)
+        .yoyo(true)
+    )
+
+    // 'on' right (and back)
+    this.queue(
+      new TWEEN.Tween({t:1})
+        .to({t:0}, 2500)
+        // .onStart(master ? function(){play('spiral')} : noop)
+        .onUpdate(this.master?noop:function() {
+          fill(ctx,grey(this.t < (1-x) ? 1 : 0));
+        })
+        .repeat(1)
+        .yoyo(true)
+    )
+
+    // this.footerHTML("rotation")
+
+    this.blank(5000)
+
+    // 'on' rotate
+    this.queue(
+      new TWEEN.Tween({a:-1})
+        .to({a:(Math.PI*2)}, 7000)
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate(this.master?noop:function() {
+          fill(ctx,grey(a > this.a ? 0 : 1));
+        })
+    )
+
+
+    // 'off' rotate
+    this.queue(
+      new TWEEN.Tween({a:0})
+        .to({a:(Math.PI*2)+1}, 4000)
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate(this.master?noop:function() {
+          fill(ctx,grey(a > this.a ? 1 : 0));
+        })
+    )
+
+
+    this.blank(5000)
+
+/*
     this.blank(5000)
 
     // hsl up (static)
@@ -884,14 +1048,15 @@
 
     this.blank(10000)
 
-    this.footerHTML("")
+    // this.footerHTML("")
+*/
 
   }
 
   /*
     Moving up down, then rotating
   */
-  SyncDemo.prototype._movement = function(){
+  SyncDemo.prototype.x_movement = function(){
     var ctx = this.ctx,
         x = this.x,
         y = this.y,
@@ -980,7 +1145,7 @@
   SyncDemo.prototype._capabilitySharing = function(){
     var ctx = this.ctx;
 
-    this.footerHTML("sharing capabilities");
+    this.footerHTML("5. sharing capabilities");
 
     this.blank(15000)
 
@@ -1089,7 +1254,7 @@
 
     this.blank(5000)
     
-    this.footerHTML("")
+    // this.footerHTML("")
 
   }
 
@@ -1115,7 +1280,7 @@
 
 
 
-    this.footerHTML('Combining capabilities <small>(turn up your volume)</small>');
+    this.footerHTML('6. combining capabilities <small>(turn up your volume)</small>');
     this.blank(15000)
 
     // fade out video
@@ -1280,7 +1445,7 @@
     //fade out the footer
     this.queue(
       new TWEEN.Tween({a:1})
-      .to({a:0}, 1000)
+      .to({a:0}, 250)
       .onUpdate(!this.master?noop:function(){
         footer.style.opacity = this.a;
       })
@@ -1290,7 +1455,7 @@
 
     this.queue(
       new TWEEN.Tween({a:0})
-      .to({a:1}, 1000)
+      .to({a:1}, 250)
       .onStart(!this.master?noop:function(){
         footer.innerHTML = html;
       })
