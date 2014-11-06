@@ -77,8 +77,8 @@
     })({
         'bubbles': '_bubbles.mp3',
         'spiral': '_dotted-spiral.mp3',
-        'clap': '_clap.mp3',
-        'ting': '_ting.mp3',
+        // 'clap': '_clap.mp3',
+        // 'ting': '_ting.mp3',
     })
 
   } catch (e) {
@@ -1286,20 +1286,20 @@
       })
     )
 
-    if(html){
+    // if(html){
 
-      this.queue(
-        new TWEEN.Tween({a:0})
-        .to({a:1}, 1000)
-        .onStart(!this.master?noop:function(){
-          footer.innerHTML = html;
-        })
-        .onUpdate(!this.master?noop:function(){
-          footer.style.opacity = this.a;
-        })
-      )
+    this.queue(
+      new TWEEN.Tween({a:0})
+      .to({a:1}, 1000)
+      .onStart(!this.master?noop:function(){
+        footer.innerHTML = html;
+      })
+      .onUpdate(!this.master?noop:function(){
+        footer.style.opacity = this.a;
+      })
+    )
 
-    }
+    // }
   }
 
   SyncDemo.prototype.blank = function(millis){
