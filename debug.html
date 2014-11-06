@@ -55,12 +55,13 @@
 
 <p>
     Master: 
-    <button onclick="master_demo(3)">demo3</button>
+    <button onclick="t.start();master_demo(3)">demo3</button>
 </p>
 
 <div id="master">
     <div id="timer"></div>
     <canvas width="960" height="540"></canvas>
+    <footer></footer>
 </div>
 
 <style type="text/css">
@@ -71,13 +72,26 @@
         width: 960px;
         height:540px;
 
-        background:url(demo-bg.jpg);
-        background-size:cover;
+        /*background:url(demo-bg.jpg);*/
+        /*background-size:cover;*/
     }
     #master #timer{
         position: absolute;
         left:405px;
         top:195px;
+    }
+
+    #master footer{
+        font-size: 30px;
+        background-color: rgba(0,0,0,0.8);
+        /* width: 100%; */
+        font-family: Din Alternate;
+        color: #fff;
+        padding: 10px;
+        -webkit-font-smoothing: antialiased;
+        text-shadow: 0 0 5px #000;
+        border-radius: 0 4px;
+        opacity: 0;
     }
 </style>
 
@@ -149,8 +163,9 @@ function master_demo(i){
     // start the actual demo
 
     setTimeout(function(){
-        var canvas = document.querySelector('#master canvas')
-        var demo = new SyncDemo(canvas, modulus/2, 0,0, true)
+        var canvas = document.querySelector('#master canvas');
+        var footer = document.querySelector('#master footer');
+        var demo = new SyncDemo({canvas:canvas, footer: footer}, modulus/2, 0,0, true)
         demo.start()
     }, cycleStart + (modulus*0.5))
 

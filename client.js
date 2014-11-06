@@ -328,20 +328,12 @@
       bodyElement = document.getElementsByTagName('body')[0];
 
 
-  var demoReset;
+  var demoReset, totally;
 
 
   bean.on(demoClose, 'click', function(e){
     e.preventDefault();
-    demoPanel.style.display = 'none';
-    bodyElement.style.overflow = 'auto';
-    if(demoReset){
-      demoReset(); demoReset = null;
-    }
-  })
-
-  bean.on(window, 'keyup',function(e){
-    if (e.keyCode == 27){
+    if(totally || confirm('are you, like, totally sure you want to stop this?')){
       demoPanel.style.display = 'none';
       bodyElement.style.overflow = 'auto';
       if(demoReset){
@@ -350,6 +342,19 @@
     }
   })
 
+  bean.on(window, 'keyup',function(e){
+    if (e.keyCode == 27){
+      if(totally || confirm('are you, like, totally sure you want to stop this?')){
+        demoPanel.style.display = 'none';
+        bodyElement.style.overflow = 'auto';
+        if(demoReset){
+          demoReset(); demoReset = null;
+        }
+      }
+    }
+  })
+
+  /*
   bean.on(demoStart1, 'click', function(e){
     e.preventDefault();
     demoPanel.style.display = 'block';
@@ -383,13 +388,14 @@
     }
 
   })
+*/
 
 
   bean.on(demoStart3, 'click', function(e){
     e.preventDefault();
     demoPanel.style.display = 'block';
     bodyElement.style.overflow = 'hidden';
-    demoTitle.innerHTML = 'Demo #3';
+    // demoTitle.innerHTML = 'Demo #3';
 
 
     // play a blank sound for iOS to start audio
@@ -417,7 +423,9 @@
 
     var drift = ((+new Date()) - offset) % modulus;
 
-    var syncDemo = new SyncDemo(canvas, drift, x, y)
+    var syncDemo = new SyncDemo({
+      canvas:canvas
+    }, drift, x, y)
 
     syncDemo.start();
 
@@ -456,14 +464,16 @@
 
         render();
       } else if(data.demo){
+        totally = true;
+
         demoClose.click();
 
-        if(data.demo === 1){
-          demoStart1.click()
-        }
-        if(data.demo === 2){
-          demoStart2.click()
-        }
+        // if(data.demo === 1){
+        //   demoStart1.click()
+        // }
+        // if(data.demo === 2){
+        //   demoStart2.click()
+        // }
         if(data.demo === 3){
           demoStart3.click()
         }
