@@ -15,6 +15,8 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var cssmin = require('gulp-cssmin');
 var htmlmin = require('gulp-htmlmin');
+var manifest = require('gulp-manifest');
+var clean = require('gulp-clean');
 
 
 var paths = {
@@ -65,19 +67,33 @@ gulp.task('html', ['js', 'css'], function() {
 gulp.task('build', ['html', 'assets'])
 
 
-gulp.task('publish', ['build'], function() {
+gulp.task('clean-cdn', function () {
+    return gulp.src('cdn', {read: false})
+               .pipe(clean());
+});
 
-  var publisher = awspublish.create(config.aws);
+
+gulp.task('cdn', ['build', 'clean-cdn'], function() {
 
   return gulp.src('./dist/*')
             .pipe(revall())
-            // .pipe(awspublish.gzip({ ext: '.gz' }))
+            .pipe(gulp.dest('cdn'))
+            .pipe(manifest())
+            .pipe(gulp.dest('cdn'))
+
+})
+
+
+gulp.task('publish', ['cdn'], function(){
+
+  var publisher = awspublish.create(config.aws);
+
+  return gulp.src('./cdn/*')
+            // x.pipe(awspublish.gzip({ ext: '.gz' }))
             .pipe(publisher.publish())
-            // .pipe(publisher.sync())
+            // x.pipe(publisher.sync())
             .pipe(awspublish.reporter())
             .pipe(cloudfront(config.aws))
-            // .pipe(gulp.dest('cdn'))
-
 })
 
 gulp.task('default', ['build'])

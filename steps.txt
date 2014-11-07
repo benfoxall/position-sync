@@ -1,3 +1,10 @@
+Notes:
+
+blue (right)
+orange (left)
+pink (down)
+
+
 1. screenshare (user focus)
 2. screenshare (room focus)
 3. timing

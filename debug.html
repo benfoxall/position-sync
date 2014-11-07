@@ -152,11 +152,13 @@ function master_demo(i){
     t.style('#ccc', 0.7);
 
     setTimeout(function(){
-        t.style('green', 2);
+        // t.style('green', 2);
+        t.on();
     }, cycleStart + (modulus*0.25))
 
     setTimeout(function(){
-        t.style('#ccc', 0.7);
+        t.off();
+        // t.style('#ccc', 0.7);
         t.stop();
     }, cycleStart + (modulus*0.75))
 
@@ -205,6 +207,7 @@ function timer(selector){
             .attr('transform', 'translate(' + r + ', ' + r + ') scale(0)');
 
     g.append('circle')
+        .attr('class', 'track')
         .attr('r',1)
         .attr('stroke-width',0.02)
         .attr('fill', 'none')
@@ -257,10 +260,28 @@ function timer(selector){
         return t;
     }
 
+    //
+    t.on = function(){
+        g.append('circle')
+            .attr('class', 'on')
+            .attr('r',0)
+            .attr('fill', '#08f') //rgba(0, 255, 0, 0.6)')
+            .attr('stroke', 'none')
+            .transition()
+            .attr('r', 1.1)
+    }
+
+    t.off = function(){
+        g.selectAll('.on')
+            .transition()
+            .attr('r',0)
+            .remove()
+    }
+
 
     t.stop = function(){
         stop = true;
-        d3.select('g')
+        svg.select('g')
             .transition()
             .duration(2500)
             .attr('transform', 'translate(' + r + ', ' + r + ') scale(0.001) rotate(90)')
